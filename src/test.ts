@@ -3,9 +3,21 @@ import { getClient } from './clientHelpers'
 import { saveResponseImage } from './imageHelpers'
 import fs from 'fs'
 
-const imgDir = ''
+const imgDir = process.argv[2]
 
-if (!imgDir) throw new Error('you must specify an output directory in the test script (like 6)')
+if (!imgDir) {
+  console.warn(
+    'you must specify an output directory in the command line, or in src/test.ts (line 6)'
+  )
+  console.log('example: npm run test -- ./output')
+  console.log('(make sure the directory exists)')
+  process.exit(1)
+}
+if (!fs.existsSync(imgDir)) {
+  console.warn('output directory does not exist')
+  process.exit(1)
+}
+console.log(`using output directory: ${imgDir}`)
 
 console.log(
   "make sure DT's gRPC server is running and with port 7850, no TLS, and compression disabled"
