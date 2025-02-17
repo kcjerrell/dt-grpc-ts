@@ -17,7 +17,7 @@ export function convertResponseImage(responseImage: Uint8Array) {
 
   const f16rgb = new Float16Array(responseImage.buffer, offset, length / 2)
 
-  const u8c = Uint8ClampedArray.from(f16rgb, (v) => (v + 1) * 127)
+  const u8c = Uint8ClampedArray.from(f16rgb, float16ToUint8)
 
   return {
     data: u8c,
@@ -35,7 +35,7 @@ export function convertResponseImage(responseImage: Uint8Array) {
 export async function saveResponseImage(responseImage: Uint8Array, path: string) {
   const { data, width, height, channels } = convertResponseImage(responseImage)
 
-  await sharp(data, {
+  return await sharp(data, {
     raw: { width, height, channels: channels as 3 | 4 },
   }).toFile(path)
 }
@@ -85,4 +85,8 @@ export async function convertImageForRequest(
   // header[8] = metadata.channels!
 
   return Uint8Array.from(data)
+}
+
+function float16ToUint8(f16: number) {
+  return (f16 + 1) * 127
 }

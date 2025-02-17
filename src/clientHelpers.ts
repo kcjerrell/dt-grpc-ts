@@ -1,8 +1,9 @@
 import { credentials } from '@grpc/grpc-js'
-import { ByteBuffer } from 'flatbuffers'
+import crypto from 'crypto'
+import os from 'os'
 import { buildConfigBuffer } from './config'
-import { GenerationConfiguration } from './generated/data/generation-configuration'
 import {
+  DeviceType,
   EchoReply,
   EchoRequest,
   ImageGenerationRequest,
@@ -10,6 +11,7 @@ import {
   ImageGenerationServiceClient,
   ImageGenerationSignpostProto,
 } from './generated/grpc/imageService'
+import { decodeOverride, getOverride } from './override'
 import { Config } from './types'
 
 let id = 0
@@ -44,10 +46,21 @@ class ClientHelper {
   }
 
   async echo(name: string) {
-    return new Promise<EchoReply>((resolve, reject) => {
+    return new Promise<ReturnType<EchoReply['toObject']>>((resolve, reject) => {
       this.client.Echo(new EchoRequest({ name }), {}, (err, res) => {
         if (err) reject(err)
-        resolve(res!)
+
+        const data = res?.toObject()
+
+        const decode = (buffer?: Uint8Array) => {
+          if (!buffer || buffer.length === 0) return '[]'
+          const decoder = new TextDecoder('utf-8')
+          return JSON.parse(decoder.decode(buffer))
+        }
+
+        const override = decodeOverride(data?.override)
+
+        resolve({ ...data, override }!)
       })
     })
   }
@@ -61,15 +74,16 @@ class ClientHelper {
   ) {
     const config = buildConfigBuffer({ id: BigInt(id++), ...opts.config })
 
-    console.log(
-      GenerationConfiguration.getRootAsGenerationConfiguration(new ByteBuffer(config)).unpack()
-    )
-
     const request = ImageGenerationRequest.fromObject({
+      scaleFactor: 1,
+      override: getOverride(),
+      user: os.hostname(),
+      device: DeviceType.LAPTOP,
       configuration: config,
       prompt: opts.prompt,
       negativePrompt: opts.negativePrompt,
       image: opts.image,
+      // contents
     })
 
     return new Promise<Uint8Array[]>((resolve, reject) => {
@@ -107,4 +121,10 @@ class ClientHelper {
         .on('end', (e: ImageGenerationRequest) => console.log('end', e))
     })
   }
+}
+
+function sha256(buffer: Uint8Array) {
+  const hash = crypto.createHash('sha256')
+  hash.update(buffer)
+  return Uint8Array.from(hash.digest())
 }
