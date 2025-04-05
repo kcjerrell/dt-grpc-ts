@@ -1,12 +1,6 @@
 # dt-grpc-ts
 A simple gRPG client for Draw Things written in TypeScript for Node.js
 
-This is barely a broof of concept at this point, but it can make basic requests
+(just a demo for now - I'll release an NPM package at some point)
 
-To use, clone the repo and cd into it, start a DT gRPC server with no TLS and response compression disabled, then:
-```
-npm i
-npm run test -- '/some/outpout/dir'
-```
-
-This will run the script test.ts - this will create an image with txt2img, then send it back to img2img with a different prompt. The generated images can be found in the folder you specified
+To use, clone the repo, `yarn install`, then run the examples in the example folder. For example, `yarn exec tsx src/examples/img2img.ts`
