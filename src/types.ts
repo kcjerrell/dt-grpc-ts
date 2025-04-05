@@ -1,11 +1,12 @@
-import { ControlT } from './generated/data/control'
+import { ControlInputType } from './generated/data/control-input-type'
+import { ControlMode } from './generated/data/control-mode'
 import { SamplerType } from './generated/data/sampler-type'
 import { SeedMode } from './generated/data/seed-mode'
 
 export interface Config {
   width?: number
   height?: number
-  id?: bigint
+  id?: number
   startWidth?: number
   startHeight?: number
   seed?: number
@@ -24,7 +25,7 @@ export interface Config {
   imageGuidanceScale?: number
   seedMode?: SeedMode
   clipSkip?: number
-  controls?: ControlT[]
+  controls?: ControlConfig[]
   loras?: LoraConfig[]
   maskBlur?: number
   faceRestoration?: string
@@ -77,10 +78,30 @@ export interface Config {
   resolutionDependentShift?: boolean
 }
 
-type LoraConfig =
-  | {
-      file: string
-      weight: number
-    }
-  | [string, number?]
-  | string
+export type LoraConfig = {
+  file: string
+  weight: number
+}
+
+export type ExtendedLoraConfig = LoraConfig | [string, number?] | string
+
+export type ControlConfig = {
+  file: string
+  weight: number
+  guidanceStart: number
+  guidanceEnd: number
+  noPrompt: boolean
+  globalAveragePooling: boolean
+  downSamplingRate: number
+  controlMode: ControlMode
+  targetBlocks: string[]
+  inputOverride: ControlInputType
+}
+
+export type Hints = {
+  hintType?: string
+  tensors?: {
+    tensor?: Uint8Array
+    weight?: number
+  }[]
+}[]

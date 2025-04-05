@@ -1,6 +1,5 @@
-import { credentials } from '@grpc/grpc-js'
-import crypto from 'crypto'
-import os from 'os'
+import { ChannelCredentials, credentials, Deadline } from '@grpc/grpc-js'
+import { hostname } from 'os'
 import { buildConfigBuffer } from './config'
 import {
   DeviceType,
@@ -11,23 +10,23 @@ import {
   ImageGenerationServiceClient,
   ImageGenerationSignpostProto,
 } from './generated/grpc/imageService'
-import { decodeOverride, getOverride } from './override'
-import { Config } from './types'
+import { decodeOverride, Override } from './override'
+import { Config, Hints } from './types'
+import { sha256 } from './util'
 
 let id = 0
 
-export async function getClient(address: string) {
+
+export function getClient(
+  address: string,
+  opts?: { defaultTimeout?: number; credentials?: ChannelCredentials }
+): ClientHelper {
   const client = new ImageGenerationServiceClient(address, credentials.createInsecure(), {
     'grpc.max_receive_message_length': Infinity,
     'grpc.max_send_message_length': Infinity,
   })
 
-  return new Promise<ClientHelper>((resolve, reject) => {
-    client.waitForReady(Infinity, (error) => {
-      if (error) reject(error)
-      resolve(new ClientHelper(client))
-    })
-  })
+  return new ClientHelper(client)
 }
 
 export type GenerateImageOptions = {
@@ -36,27 +35,31 @@ export type GenerateImageOptions = {
   negativePrompt: string
   image?: Uint8Array
   mask?: Uint8Array
+  hints?: Hints
+  contents?: Uint8Array[]
+  override?: { [Prop in keyof Override]: Uint8Array }
 }
 
-class ClientHelper {
+export class ClientHelper {
   client: ImageGenerationServiceClient
+  defaultTimeout: number = 10000
 
   constructor(client: ImageGenerationServiceClient) {
     this.client = client
   }
 
-  async echo(name: string) {
-    return new Promise<ReturnType<EchoReply['toObject']>>((resolve, reject) => {
-      this.client.Echo(new EchoRequest({ name }), {}, (err, res) => {
+  async echo(name?: string) {
+    await this.waitForReady()
+
+    return new Promise<
+      Omit<ReturnType<EchoReply['toObject']>, 'override'> & {
+        override: Override
+      }
+    >((resolve, reject) => {
+      this.client.Echo(new EchoRequest({ name: name ?? 'no-name' }), {}, (err, res) => {
         if (err) reject(err)
 
         const data = res?.toObject()
-
-        const decode = (buffer?: Uint8Array) => {
-          if (!buffer || buffer.length === 0) return '[]'
-          const decoder = new TextDecoder('utf-8')
-          return JSON.parse(decoder.decode(buffer))
-        }
 
         const override = decodeOverride(data?.override)
 
@@ -67,43 +70,51 @@ class ClientHelper {
 
   async generateImage(
     opts: GenerateImageOptions,
-    previewHandler?: (
-      previewImage: Uint8Array,
-      signpost: ReturnType<ImageGenerationSignpostProto['toObject']>
-    ) => void
+    updateCallback?: (
+      signpost: ReturnType<ImageGenerationSignpostProto['toObject']>,
+      previewImage?: Uint8Array
+    ) => void,
+    signal?: AbortSignal
   ) {
-    const config = buildConfigBuffer({ id: BigInt(id++), ...opts.config })
+    const config = buildConfigBuffer({ id: id++, ...opts.config })
 
     const request = ImageGenerationRequest.fromObject({
       scaleFactor: 1,
-      override: getOverride(),
-      user: os.hostname(),
+      user: hostname(),
       device: DeviceType.LAPTOP,
       configuration: config,
       prompt: opts.prompt,
       negativePrompt: opts.negativePrompt,
       image: opts.image,
-      // contents
+      mask: opts.mask,
+      hints: opts.hints,
+      contents: opts.contents,
+      override: opts.override,
     })
 
+    await this.waitForReady()
+
     return new Promise<Uint8Array[]>((resolve, reject) => {
-      this.client
+      const grpcRequest = this.client
         .GenerateImage(request)
 
         // data
         .on('data', async (e: ImageGenerationResponse) => {
           const res = e.toObject()
-          console.log(res.currentSignpost)
-          if (res.previewImage?.byteLength && previewHandler) {
-            previewHandler(Uint8Array.from(res.previewImage!), res.currentSignpost!)
-          }
+          // console.debug(res.currentSignpost)
+
           if (res.generatedImages?.length) {
             resolve(e.generatedImages.map((im) => Uint8Array.from(im)))
+          } else if (updateCallback) {
+            const preview = res.previewImage?.byteLength
+              ? Uint8Array.from(res.previewImage)
+              : undefined
+            updateCallback(res.currentSignpost!, preview)
           }
         })
 
         // status
-        .on('status', (e: ImageGenerationRequest) => console.log('status', e))
+        .on('status', (e: ImageGenerationRequest) => console.debug('status', e))
 
         // error
         .on('error', (e: ImageGenerationResponse) => {
@@ -112,19 +123,31 @@ class ClientHelper {
         })
 
         // metadata
-        .on('metadata', (e: ImageGenerationResponse) => console.log('metadata', e))
+        .on('metadata', (e: ImageGenerationResponse) => console.debug('metadata', e))
 
         // close
-        .on('close', (e: ImageGenerationRequest) => console.log('close', e))
+        .on('close', (e: ImageGenerationRequest) => console.debug('close', e))
 
         // end
-        .on('end', (e: ImageGenerationRequest) => console.log('end', e))
+        .on('end', (e: ImageGenerationRequest) => console.debug('end', e))
+
+      if (signal) signal.onabort = () => grpcRequest.cancel()
+    })
+  }
+
+  async waitForReady(deadline: Deadline = Infinity) {
+    return new Promise<void>((resolve, reject) => {
+      this.client.waitForReady(deadline, (err) => {
+        if (err) reject(err)
+        else resolve()
+      })
     })
   }
 }
 
-function sha256(buffer: Uint8Array) {
-  const hash = crypto.createHash('sha256')
-  hash.update(buffer)
-  return Uint8Array.from(hash.digest())
+function addToContents(contents: Uint8Array[], item?: Uint8Array) {
+  if (!item) return undefined
+
+  contents.push(item)
+  return sha256(item)
 }

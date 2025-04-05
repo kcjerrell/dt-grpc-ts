@@ -5,10 +5,13 @@ import {
 } from './generated/data/generation-configuration'
 import { LoRAT } from './generated/data/lo-ra'
 import { SamplerType } from './generated/data/sampler-type'
-import { Config } from './types'
+import { Config, ControlConfig, LoraConfig } from './types'
+import { ControlT } from './generated/data/control'
+import { ControlMode } from './generated/data/control-mode'
+import { ControlInputType } from './generated/data/control-input-type'
 
 // default configuration from DT app
-// some properties renmed
+// some properties renamed
 const drawThingsDefault = {
   preserveOriginalAfterInpaint: true,
   batchCount: 1,
@@ -47,14 +50,14 @@ const drawThingsDefault = {
   targetImageWidth: 0,
 } as Config
 
-export function buildConfig(config: Config) {
+export function buildConfig(config: Config = {}) {
   const c: Config = { ...drawThingsDefault, ...config }
 
   const width = (c.width || c.startWidth)!
   const height = (c.height || c.startHeight)!
 
   const genConfig = new GenerationConfigurationT(
-    c.id, // id
+    BigInt(c.id ?? 0), // id
     width / 64, // width (divided by 64)
     height / 64, //height (divided by 64)
     c.seed && c.seed >= 0 ? c.seed : Math.floor(Math.random() * 4294967295), // seed,
@@ -73,7 +76,7 @@ export function buildConfig(config: Config) {
     c.imageGuidanceScale,
     c.seedMode, // seedMode
     c.clipSkip, // clipSkip
-    c.controls, // controls
+    getControlsTs(c.controls), // controls
     getLoraTs(c.loras), // loras
     c.maskBlur, // maskBlur
     c.faceRestoration, // faceRestoration
@@ -144,21 +147,71 @@ export function unpackConfig(configBuffer: Uint8Array) {
   return conf.unpack()
 }
 
-function getLoraTs(loras: Config['loras']) {
+const loraDefault: Omit<LoraConfig, 'file'> = {
+  weight: 0.8,
+}
+
+function getLoraTs(loras?: LoraConfig[]) {
   if (!loras || loras.length === 0) {
     return [] as LoRAT[]
   }
-  const loraTs = []
+  const loraTs = [] as LoRAT[]
 
-  for (const lora of loras) {
-    if (typeof lora === 'string') {
-      loraTs.push(new LoRAT(lora, 0.8))
-    } else if (Array.isArray(lora)) {
-      loraTs.push(new LoRAT(lora[0], lora[1] ?? 0.8))
-    } else if (typeof lora === 'object') {
-      loraTs.push(new LoRAT(lora.file, lora.weight ?? 0.8))
-    }
+  for (const loraInput of loras) {
+    const lora = { ...loraDefault, ...loraInput }
+
+    if (!lora.file) continue
+    loraTs.push(new LoRAT(lora.file, lora.weight))
   }
 
   return loraTs
+}
+
+const controlDefault: Omit<ControlConfig, 'file'> = {
+  globalAveragePooling: false,
+  weight: 1,
+  noPrompt: false,
+  guidanceStart: 0,
+  guidanceEnd: 1,
+  targetBlocks: [],
+  controlMode: ControlMode.Balanced,
+  inputOverride: ControlInputType.Inpaint,
+  downSamplingRate: 1,
+}
+
+function getControlsTs(controls?: ControlConfig[]) {
+  if (!controls || controls.length === 0) {
+    return [] as ControlT[]
+  }
+  const controlTs = [] as ControlT[]
+
+  for (const controlInput of controls) {
+    const control = { ...controlDefault, ...controlInput }
+
+    if (!control.file) continue
+    controlTs.push(
+      new ControlT(
+        control.file,
+        control.weight,
+        control.guidanceStart,
+        control.guidanceEnd,
+        control.noPrompt,
+        control.globalAveragePooling,
+        control.downSamplingRate,
+        control.controlMode,
+        control.targetBlocks,
+        control.inputOverride
+      )
+    )
+  }
+
+  return controlTs
+}
+
+export function getBaseConfig() {
+  const config = { ...buildConfig(), ...drawThingsDefault }
+
+  config.id = parseInt(config.id.toString())
+
+  return config as Config
 }
