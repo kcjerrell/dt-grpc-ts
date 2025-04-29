@@ -1,5 +1,5 @@
-import { getClient, ImageBuffer } from '..'
-import { buildRequest } from '../imageRequestBuilder'
+import { getClient, ImageBuffer, buildRequest } from '..'
+import { saveResult } from './helpers'
 
 export async function img2imgExample() {
   const client = getClient('localhost:7859')
@@ -15,7 +15,7 @@ export async function img2imgExample() {
     'boring, blurry, watermark'
   ).build()
 
-  const result = await client.generateImage(request, (signpost) => {
+  const result = await client.generateImage(request, signpost => {
     if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
   })
 
@@ -29,6 +29,7 @@ export async function img2imgExample() {
       width: 512,
       height: 512,
       strength: 0.7,
+      batchSize: 2,
     },
     'bear',
     'boring, blurry, watermark'
@@ -36,12 +37,11 @@ export async function img2imgExample() {
     .addImage(image)
     .build()
 
-  const result2 = await client.generateImage(request2, (signpost) => {
+  const result2 = await client.generateImage(request2, signpost => {
     if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
   })
 
-  const image2 = ImageBuffer.fromDTTensor(result2[0])
-  await image2.toFile('examples_img2img_output2.png')
+  await saveResult(result2, 'examples_img2img_output2')
 }
 
 if (require.main === module) {

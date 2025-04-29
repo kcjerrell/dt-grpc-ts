@@ -1,8 +1,6 @@
 import { join } from 'path'
-import { ControlMode } from '..'
-import { getClient } from '../clientHelpers'
-import { ImageBuffer } from '../imageBuffer'
-import { buildRequest } from '../imageRequestBuilder'
+import { buildRequest, ControlMode, getClient, ImageBuffer } from '..'
+import { saveResult } from './helpers'
 
 async function depthExample() {
   const client = getClient('localhost:7859')
@@ -33,24 +31,22 @@ async function depthExample() {
     .addHint('depth', await ImageBuffer.fromFile(join(__dirname, 'depth.png')), 1)
     .build()
 
-  const result = await client.generateImage(request, (signpost) => {
+  const result = await client.generateImage(request, signpost => {
     if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
   })
 
-  const image = ImageBuffer.fromDTTensor(result[0])
-  await image.toFile('example_depth_output1.png')
+  saveResult(result, 'example_depth_output1')
   console.log('Finished image:', join(process.cwd(), 'example_depth_output1.png'))
 
   // reusing the original request, just changing the prompt
   // should probably be safe
   request.prompt = 'winter'
 
-  const result2 = await client.generateImage(request, (signpost) => {
+  const result2 = await client.generateImage(request, signpost => {
     if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
   })
 
-  const image2 = ImageBuffer.fromDTTensor(result2[0])
-  await image2.toFile('example_depth_output2.png')
+  saveResult(result2, 'example_depth_output2')
   console.log('Finished image:', join(process.cwd(), 'example_depth_output2.png'))
 }
 

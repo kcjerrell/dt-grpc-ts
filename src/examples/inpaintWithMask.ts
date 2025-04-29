@@ -1,6 +1,5 @@
 import { join } from 'path'
-import { ControlInputType, ControlMode, getClient, ImageBuffer } from '..'
-import { buildRequest } from '../imageRequestBuilder'
+import { ControlInputType, ControlMode, getClient, ImageBuffer, buildRequest } from '..'
 
 export async function inpaintWithMaskExample() {
   const client = getClient('localhost:7859')
@@ -18,7 +17,7 @@ export async function inpaintWithMaskExample() {
     'boring, blurry, watermark'
   ).build()
 
-  const result = await client.generateImage(request, (signpost) => {
+  const result = await client.generateImage(request, signpost => {
     if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
   })
 
@@ -28,6 +27,7 @@ export async function inpaintWithMaskExample() {
 
   // masks one side of the image
   const mask = getMask(image.width, image.height)
+  await mask.toFile('examples_inpaint_mask.png')
 
   const request2 = await buildRequest(
     {
@@ -36,6 +36,7 @@ export async function inpaintWithMaskExample() {
       width: 512,
       height: 512,
       maskBlur: 5,
+      strength: 1,
       controls: [
         {
           globalAveragePooling: false,
@@ -46,7 +47,7 @@ export async function inpaintWithMaskExample() {
           guidanceEnd: 1,
           targetBlocks: [],
           controlMode: ControlMode.Balanced,
-          inputOverride: ControlInputType.Inpaint,
+          inputOverride: ControlInputType.Unspecified,
           downSamplingRate: 1,
         },
       ],
@@ -58,7 +59,7 @@ export async function inpaintWithMaskExample() {
     .addMask(mask)
     .build()
 
-  const result2 = await client.generateImage(request2, (signpost) => {
+  const result2 = await client.generateImage(request2, signpost => {
     if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
   })
 
@@ -72,7 +73,7 @@ function getMask(width: number, height: number) {
 
   for (let y = 0; y < height; y++) {
     for (let x = Math.floor(width / 2); x < width; x++) {
-      image.setPixel(x, y, [1, 1, 1])
+      image.setPixel(x, y, [255, 255, 255])
     }
   }
 

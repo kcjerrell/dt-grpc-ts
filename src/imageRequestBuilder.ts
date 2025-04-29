@@ -27,7 +27,7 @@ export function buildRequest(
 ): RequestBuilder<false, false> {
   const request = {} as GenerateImageOptions
 
-  request.config = { ...getBaseConfig(), ...config }
+  request.config = checkConfig({ ...getBaseConfig(), ...config })
   request.prompt = prompt
   request.negativePrompt = negativePrompt
   request.contents = []
@@ -148,8 +148,8 @@ type RequestBuilder<Image extends boolean = false, Mask extends boolean = false>
   ? {}
   : {
       /**
-       * Adds a mask to the request. For best results, should be black and white
-       * Will be resized to match the config if necessary
+       * Adds a mask to the request. For best results, should be black and white.
+       * Will be resized to match the config if necessary.
        *
        * @param mask - The mask to be added.
        */
@@ -166,3 +166,24 @@ type RequestBuilder<Image extends boolean = false, Mask extends boolean = false>
          */
         addImage(image: BufferWithInfo): RequestBuilder<true, Mask>
       })
+
+function checkConfig(config: Partial<Config>) {
+  const sizeKeys = [
+    'width',
+    'height',
+    'hiresFixStartHeight',
+    'hiresFixStartWidth',
+    'decodingTileHeight',
+    'decodingTileWidth',
+    'decodingTileOverlap',
+    'diffusionTileHeight',
+    'diffusionTileWidth',
+    'diffusionTileOverlap',
+  ] as const
+
+  for (const key of sizeKeys) {
+    config[key] = Math.max(Math.round((config[key] ?? 0) / 64) * 64, 64)
+  }
+
+  return config
+}

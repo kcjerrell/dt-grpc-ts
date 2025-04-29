@@ -1,10 +1,9 @@
 {
   "include": [
-    "src"
+    "src",
+    "tests"
   ],
-  "exclude": [
-    "**/*.test.ts"
-  ],
+  "exclude": [],
   "compilerOptions": {
     "module": "NodeNext",
     "target": "ESNext",

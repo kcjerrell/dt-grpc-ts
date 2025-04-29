@@ -11,13 +11,16 @@ const decoders: {
   ) => [number, number, number];
 } = {};
 
-decoders['.v1'] = decoders['.v2'] = decoders['.svI2v'] = (v0, v1, v2, v3) => {
-  const r = 49.521 * v0 + 29.0283 * v1 - 23.9673 * v2 - 39.4981 * v3 + 99.9368;
-  const g = 41.1373 * v0 + 42.4951 * v1 + 24.7349 * v2 - 50.8279 * v3 + 99.8421;
-  const b = 40.2919 * v0 + 18.9304 * v1 + 30.0236 * v2 - 81.9976 * v3 + 99.5384;
+decoders['.v1'] =
+  decoders['.v2'] =
+  decoders['.svdI2v'] =
+    (v0, v1, v2, v3) => {
+      const r = 49.521 * v0 + 29.0283 * v1 - 23.9673 * v2 - 39.4981 * v3 + 99.9368
+      const g = 41.1373 * v0 + 42.4951 * v1 + 24.7349 * v2 - 50.8279 * v3 + 99.8421
+      const b = 40.2919 * v0 + 18.9304 * v1 + 30.0236 * v2 - 81.9976 * v3 + 99.5384
 
-  return [r, g, b];
-};
+      return [r, g, b]
+    }
 
 /**
  *  for decoding preview images. These should be in the format returned by the gRPC api

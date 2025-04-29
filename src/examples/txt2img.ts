@@ -1,9 +1,9 @@
 import { join } from 'path'
-import { getClient, ImageBuffer } from '..'
-import { buildRequest } from '../imageRequestBuilder'
+import { getClient, ImageBuffer, buildRequest } from '..'
 
 export async function txt2imgExample() {
-  const client = getClient('localhost:7859')
+  const client = getClient('127.0.0.1:7859')
+  await client.waitForReady()
 
   // any missing values in the config will be replaced with defaults
   const request = await buildRequest(
@@ -17,7 +17,7 @@ export async function txt2imgExample() {
     'boring, blurry, watermark'
   ).build()
 
-  const result = await client.generateImage(request, (signpost) => {
+  const result = await client.generateImage(request, signpost => {
     if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
   })
 
