@@ -1,10 +1,13 @@
+import { join } from 'path'
 import { ImageBuffer } from '../imageBuffer'
 
 export async function saveResult(result: Uint8Array<ArrayBufferLike>[], name: string) {
-  await Promise.all(
+  return await Promise.all(
     result.map(async (result, i) => {
       const image = ImageBuffer.fromDTTensor(result)
       await image.toFile(`${name}-${i}.png`)
+      console.log('Finished image:', join(process.cwd(), `${name}-${i}.png`))
+      return image
     })
   )
 }

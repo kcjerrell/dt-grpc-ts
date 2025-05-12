@@ -1,6 +1,7 @@
 import { ChannelCredentials, credentials, Deadline } from '@grpc/grpc-js'
+import cliProgress from 'cli-progress'
 import { hostname } from 'os'
-import { buildConfigBuffer } from './config'
+import { buildConfig, buildConfigBuffer } from './config'
 import {
   DeviceType,
   EchoReply,
@@ -15,7 +16,6 @@ import { Config, Hints } from './types'
 import { sha256 } from './util'
 
 let id = 0
-
 
 export function getClient(
   address: string,
@@ -76,13 +76,14 @@ export class ClientHelper {
     ) => void,
     signal?: AbortSignal
   ) {
-    const config = buildConfigBuffer({ id: id++, ...opts.config })
+    const config = buildConfig({ id: id++, ...opts.config })
+    const configBuffer = buildConfigBuffer(config)
 
     const request = ImageGenerationRequest.fromObject({
       scaleFactor: 1,
       user: hostname(),
       device: DeviceType.LAPTOP,
-      configuration: config,
+      configuration: configBuffer,
       prompt: opts.prompt,
       negativePrompt: opts.negativePrompt,
       image: opts.image,
@@ -94,6 +95,9 @@ export class ClientHelper {
 
     await this.waitForReady()
 
+    const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
+    bar1.start(config.steps ?? 1, 0)
+
     return new Promise<Uint8Array[]>((resolve, reject) => {
       const grpcRequest = this.client
         .GenerateImage(request)
@@ -101,35 +105,39 @@ export class ClientHelper {
         // data
         .on('data', async (e: ImageGenerationResponse) => {
           const res = e.toObject()
-          // console.debug(res.currentSignpost)
+          const signpost = res.currentSignpost
+
+          if (signpost?.sampling?.step) bar1.update(signpost.sampling.step)
 
           if (res.generatedImages?.length) {
-            resolve(e.generatedImages.map((im) => Uint8Array.from(im)))
-          } else if (updateCallback) {
+            bar1.stop()
+            resolve(e.generatedImages.map(im => Uint8Array.from(im)))
+          } else if (updateCallback && signpost) {
             const preview = res.previewImage?.byteLength
               ? Uint8Array.from(res.previewImage)
               : undefined
-            updateCallback(res.currentSignpost!, preview)
+            updateCallback(signpost, preview)
           }
         })
 
         // status
-        .on('status', (e: ImageGenerationRequest) => console.debug('status', e))
+        // .on('status', (e: ImageGenerationRequest) => console.debug('status', e))
 
         // error
         .on('error', (e: ImageGenerationResponse) => {
           console.error('error', e)
+          bar1.stop()
           reject(e)
         })
 
-        // metadata
-        .on('metadata', (e: ImageGenerationResponse) => console.debug('metadata', e))
+      // metadata
+      // .on('metadata', (e: ImageGenerationResponse) => console.debug('metadata', e))
 
-        // close
-        .on('close', (e: ImageGenerationRequest) => console.debug('close', e))
+      // close
+      // .on('close', (e: ImageGenerationRequest) => console.debug('close', e))
 
-        // end
-        .on('end', (e: ImageGenerationRequest) => console.debug('end', e))
+      // end
+      // .on('end', (e: ImageGenerationRequest) => console.debug('end', e))
 
       if (signal) signal.onabort = () => grpcRequest.cancel()
     })
@@ -137,7 +145,7 @@ export class ClientHelper {
 
   async waitForReady(deadline: Deadline = Infinity) {
     return new Promise<void>((resolve, reject) => {
-      this.client.waitForReady(deadline, (err) => {
+      this.client.waitForReady(deadline, err => {
         if (err) reject(err)
         else resolve()
       })

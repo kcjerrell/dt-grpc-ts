@@ -1,5 +1,5 @@
-import { join } from 'path'
 import { ControlInputType, ControlMode, getClient, ImageBuffer, buildRequest } from '..'
+import { saveResult } from './helpers'
 
 export async function inpaintWithMaskExample() {
   const client = getClient('localhost:7859')
@@ -17,13 +17,9 @@ export async function inpaintWithMaskExample() {
     'boring, blurry, watermark'
   ).build()
 
-  const result = await client.generateImage(request, signpost => {
-    if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
-  })
+  const result = await client.generateImage(request)
 
-  const image = ImageBuffer.fromDTTensor(result[0])
-  await image.toFile('examples_inpaint_output1.png')
-  console.log('Finished image 1:', join(process.cwd(), 'examples_inpaint_output1.png'))
+  const [image] = await saveResult(result, 'examples_inpaint_output1')
 
   // masks one side of the image
   const mask = getMask(image.width, image.height)
@@ -59,13 +55,9 @@ export async function inpaintWithMaskExample() {
     .addMask(mask)
     .build()
 
-  const result2 = await client.generateImage(request2, signpost => {
-    if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
-  })
+  const result2 = await client.generateImage(request2)
 
-  const image2 = ImageBuffer.fromDTTensor(result2[0])
-  await image2.toFile('examples_inpaint_output2.png')
-  console.log('Finished image 2:', join(process.cwd(), 'examples_inpaint_output2.png'))
+  await saveResult(result2, 'examples_inpaint_output2')
 }
 
 function getMask(width: number, height: number) {

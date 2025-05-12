@@ -1,8 +1,8 @@
-import { join } from 'path'
-import { getClient, ImageBuffer, buildRequest } from '..'
+import { getClient, buildRequest } from '..'
+import { saveResult } from './helpers'
 
 export async function txt2imgExample() {
-  const client = getClient('127.0.0.1:7859')
+  const client = getClient('localhost:7859')
   await client.waitForReady()
 
   // any missing values in the config will be replaced with defaults
@@ -17,13 +17,9 @@ export async function txt2imgExample() {
     'boring, blurry, watermark'
   ).build()
 
-  const result = await client.generateImage(request, signpost => {
-    if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
-  })
+  const result = await client.generateImage(request)
 
-  const image = ImageBuffer.fromDTTensor(result[0]).sharp()
-  await image.toFile('examples_txt2img_output.png')
-  console.log('Finished image:', join(process.cwd(), 'examples_txt2img_output.png'))
+  await saveResult(result, 'examples_txt2img_output')
 }
 
 if (require.main === module) {

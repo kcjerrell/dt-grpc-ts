@@ -132,8 +132,8 @@ export function buildConfig(config: Config = {}) {
   return genConfig
 }
 
-export function buildConfigBuffer(config: Config) {
-  const configT = buildConfig(config)
+export function buildConfigBuffer(configT: GenerationConfigurationT) {
+  // const configT = buildConfig(config)
 
   const builder = new Builder(1024)
   GenerationConfiguration.finishGenerationConfigurationBuffer(builder, configT.pack(builder))

@@ -26,28 +26,22 @@ async function depthExample() {
         },
       ],
     },
-    'spring'
+    'spring, lush trees, blue skies'
   )
     .addHint('depth', await ImageBuffer.fromFile(join(__dirname, 'depth.png')), 1)
     .build()
 
-  const result = await client.generateImage(request, signpost => {
-    if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
-  })
+  const result = await client.generateImage(request)
 
-  saveResult(result, 'example_depth_output1')
-  console.log('Finished image:', join(process.cwd(), 'example_depth_output1.png'))
+  await saveResult(result, 'example_depth_output1')
 
   // reusing the original request, just changing the prompt
   // should probably be safe
-  request.prompt = 'winter'
+  request.prompt = 'winter, snow covered trees, gray stormy sky'
 
-  const result2 = await client.generateImage(request, signpost => {
-    if (signpost.sampling?.step) console.log('Sampling step: ', signpost.sampling.step)
-  })
+  const result2 = await client.generateImage(request)
 
-  saveResult(result2, 'example_depth_output2')
-  console.log('Finished image:', join(process.cwd(), 'example_depth_output2.png'))
+  await saveResult(result2, 'example_depth_output2')
 }
 
 if (require.main === module) {
