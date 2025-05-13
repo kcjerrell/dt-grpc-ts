@@ -2,1247 +2,1210 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 
-import * as flatbuffers from 'flatbuffers'
-
-import { Control, ControlT } from './control.js'
-import { LoRA, LoRAT } from './lo-ra.js'
-import { SamplerType } from './sampler-type.js'
-import { SeedMode } from './seed-mode.js'
-
-export class GenerationConfiguration
-  implements flatbuffers.IUnpackableObject<GenerationConfigurationT>
-{
-  bb: flatbuffers.ByteBuffer | null = null
-  bb_pos = 0
-  __init(i: number, bb: flatbuffers.ByteBuffer): GenerationConfiguration {
-    this.bb_pos = i
-    this.bb = bb
-    return this
-  }
-
-  static getRootAsGenerationConfiguration(
-    bb: flatbuffers.ByteBuffer,
-    obj?: GenerationConfiguration
-  ): GenerationConfiguration {
-    return (obj || new GenerationConfiguration()).__init(
-      bb.readInt32(bb.position()) + bb.position(),
-      bb
-    )
-  }
-
-  static getSizePrefixedRootAsGenerationConfiguration(
-    bb: flatbuffers.ByteBuffer,
-    obj?: GenerationConfiguration
-  ): GenerationConfiguration {
-    bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH)
-    return (obj || new GenerationConfiguration()).__init(
-      bb.readInt32(bb.position()) + bb.position(),
-      bb
-    )
-  }
-
-  id(): bigint {
-    const offset = this.bb!.__offset(this.bb_pos, 4)
-    return offset ? this.bb!.readInt64(this.bb_pos + offset) : BigInt('0')
-  }
-
-  startWidth(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 6)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0
-  }
-
-  startHeight(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 8)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0
-  }
-
-  seed(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 10)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0
-  }
-
-  steps(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 12)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0
-  }
-
-  guidanceScale(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 14)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0
-  }
-
-  strength(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 16)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0
-  }
-
-  model(): string | null
-  model(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
-  model(optionalEncoding?: any): string | Uint8Array | null {
-    const offset = this.bb!.__offset(this.bb_pos, 18)
-    return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null
-  }
-
-  sampler(): SamplerType {
-    const offset = this.bb!.__offset(this.bb_pos, 20)
-    return offset ? this.bb!.readInt8(this.bb_pos + offset) : SamplerType.DPMPP2MKarras
-  }
-
-  batchCount(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 22)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 1
-  }
-
-  batchSize(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 24)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 1
-  }
-
-  hiresFix(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 26)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false
-  }
-
-  hiresFixStartWidth(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 28)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0
-  }
-
-  hiresFixStartHeight(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 30)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0
-  }
-
-  hiresFixStrength(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 32)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.7
-  }
-
-  upscaler(): string | null
-  upscaler(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
-  upscaler(optionalEncoding?: any): string | Uint8Array | null {
-    const offset = this.bb!.__offset(this.bb_pos, 34)
-    return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null
-  }
-
-  imageGuidanceScale(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 36)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.5
-  }
-
-  seedMode(): SeedMode {
-    const offset = this.bb!.__offset(this.bb_pos, 38)
-    return offset ? this.bb!.readInt8(this.bb_pos + offset) : SeedMode.Legacy
-  }
-
-  clipSkip(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 40)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 1
-  }
-
-  controls(index: number, obj?: Control): Control | null {
-    const offset = this.bb!.__offset(this.bb_pos, 42)
-    return offset
-      ? (obj || new Control()).__init(
-          this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4),
-          this.bb!
-        )
-      : null
-  }
-
-  controlsLength(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 42)
-    return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0
-  }
-
-  loras(index: number, obj?: LoRA): LoRA | null {
-    const offset = this.bb!.__offset(this.bb_pos, 44)
-    return offset
-      ? (obj || new LoRA()).__init(
-          this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4),
-          this.bb!
-        )
-      : null
-  }
-
-  lorasLength(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 44)
-    return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0
-  }
-
-  maskBlur(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 46)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0
-  }
-
-  faceRestoration(): string | null
-  faceRestoration(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
-  faceRestoration(optionalEncoding?: any): string | Uint8Array | null {
-    const offset = this.bb!.__offset(this.bb_pos, 48)
-    return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null
-  }
-
-  clipWeight(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 54)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0
-  }
-
-  negativePromptForImagePrior(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 56)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true
-  }
-
-  imagePriorSteps(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 58)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 5
-  }
-
-  refinerModel(): string | null
-  refinerModel(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
-  refinerModel(optionalEncoding?: any): string | Uint8Array | null {
-    const offset = this.bb!.__offset(this.bb_pos, 60)
-    return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null
-  }
-
-  originalImageHeight(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 62)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0
-  }
-
-  originalImageWidth(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 64)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0
-  }
-
-  cropTop(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 66)
-    return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0
-  }
-
-  cropLeft(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 68)
-    return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0
-  }
-
-  targetImageHeight(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 70)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0
-  }
-
-  targetImageWidth(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 72)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0
-  }
-
-  aestheticScore(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 74)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 6.0
-  }
-
-  negativeAestheticScore(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 76)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 2.5
-  }
-
-  zeroNegativePrompt(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 78)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false
-  }
-
-  refinerStart(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 80)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.7
-  }
-
-  negativeOriginalImageHeight(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 82)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0
-  }
-
-  negativeOriginalImageWidth(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 84)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0
-  }
-
-  name(): string | null
-  name(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
-  name(optionalEncoding?: any): string | Uint8Array | null {
-    const offset = this.bb!.__offset(this.bb_pos, 86)
-    return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null
-  }
-
-  fpsId(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 88)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 5
-  }
-
-  motionBucketId(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 90)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 127
-  }
-
-  condAug(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 92)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.02
-  }
-
-  startFrameCfg(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 94)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0
-  }
-
-  numFrames(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 96)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 14
-  }
-
-  maskBlurOutset(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 98)
-    return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0
-  }
-
-  sharpness(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 100)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0
-  }
-
-  shift(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 102)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0
-  }
-
-  stage2Steps(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 104)
-    return offset ? this.bb!.readUint32(this.bb_pos + offset) : 10
-  }
-
-  stage2Cfg(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 106)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0
-  }
-
-  stage2Shift(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 108)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0
-  }
-
-  tiledDecoding(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 110)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false
-  }
-
-  decodingTileWidth(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 112)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 10
-  }
-
-  decodingTileHeight(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 114)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 10
-  }
-
-  decodingTileOverlap(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 116)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 2
-  }
-
-  stochasticSamplingGamma(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 118)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.3
-  }
-
-  preserveOriginalAfterInpaint(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 120)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true
-  }
-
-  tiledDiffusion(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 122)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false
-  }
-
-  diffusionTileWidth(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 124)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 16
-  }
-
-  diffusionTileHeight(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 126)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 16
-  }
-
-  diffusionTileOverlap(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 128)
-    return offset ? this.bb!.readUint16(this.bb_pos + offset) : 2
-  }
-
-  upscalerScaleFactor(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 130)
-    return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0
-  }
-
-  t5TextEncoder(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 132)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true
-  }
-
-  separateClipL(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 134)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false
-  }
-
-  clipLText(): string | null
-  clipLText(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
-  clipLText(optionalEncoding?: any): string | Uint8Array | null {
-    const offset = this.bb!.__offset(this.bb_pos, 136)
-    return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null
-  }
-
-  separateOpenClipG(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 138)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false
-  }
-
-  openClipGText(): string | null
-  openClipGText(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
-  openClipGText(optionalEncoding?: any): string | Uint8Array | null {
-    const offset = this.bb!.__offset(this.bb_pos, 140)
-    return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null
-  }
-
-  speedUpWithGuidanceEmbed(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 142)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true
-  }
-
-  guidanceEmbed(): number {
-    const offset = this.bb!.__offset(this.bb_pos, 144)
-    return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 3.5
-  }
-
-  resolutionDependentShift(): boolean {
-    const offset = this.bb!.__offset(this.bb_pos, 146)
-    return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true
-  }
-
-  static startGenerationConfiguration(builder: flatbuffers.Builder) {
-    builder.startObject(72)
-  }
-
-  static addId(builder: flatbuffers.Builder, id: bigint) {
-    builder.addFieldInt64(0, id, BigInt('0'))
-  }
-
-  static addStartWidth(builder: flatbuffers.Builder, startWidth: number) {
-    builder.addFieldInt16(1, startWidth, 0)
-  }
-
-  static addStartHeight(builder: flatbuffers.Builder, startHeight: number) {
-    builder.addFieldInt16(2, startHeight, 0)
-  }
-
-  static addSeed(builder: flatbuffers.Builder, seed: number) {
-    builder.addFieldInt32(3, seed, 0)
-  }
-
-  static addSteps(builder: flatbuffers.Builder, steps: number) {
-    builder.addFieldInt32(4, steps, 0)
-  }
-
-  static addGuidanceScale(builder: flatbuffers.Builder, guidanceScale: number) {
-    builder.addFieldFloat32(5, guidanceScale, 0.0)
-  }
-
-  static addStrength(builder: flatbuffers.Builder, strength: number) {
-    builder.addFieldFloat32(6, strength, 0.0)
-  }
-
-  static addModel(builder: flatbuffers.Builder, modelOffset: flatbuffers.Offset) {
-    builder.addFieldOffset(7, modelOffset, 0)
-  }
-
-  static addSampler(builder: flatbuffers.Builder, sampler: SamplerType) {
-    builder.addFieldInt8(8, sampler, SamplerType.DPMPP2MKarras)
-  }
-
-  static addBatchCount(builder: flatbuffers.Builder, batchCount: number) {
-    builder.addFieldInt32(9, batchCount, 1)
-  }
-
-  static addBatchSize(builder: flatbuffers.Builder, batchSize: number) {
-    builder.addFieldInt32(10, batchSize, 1)
-  }
-
-  static addHiresFix(builder: flatbuffers.Builder, hiresFix: boolean) {
-    builder.addFieldInt8(11, +hiresFix, +false)
-  }
-
-  static addHiresFixStartWidth(builder: flatbuffers.Builder, hiresFixStartWidth: number) {
-    builder.addFieldInt16(12, hiresFixStartWidth, 0)
-  }
-
-  static addHiresFixStartHeight(builder: flatbuffers.Builder, hiresFixStartHeight: number) {
-    builder.addFieldInt16(13, hiresFixStartHeight, 0)
-  }
-
-  static addHiresFixStrength(builder: flatbuffers.Builder, hiresFixStrength: number) {
-    builder.addFieldFloat32(14, hiresFixStrength, 0.7)
-  }
-
-  static addUpscaler(builder: flatbuffers.Builder, upscalerOffset: flatbuffers.Offset) {
-    builder.addFieldOffset(15, upscalerOffset, 0)
-  }
-
-  static addImageGuidanceScale(builder: flatbuffers.Builder, imageGuidanceScale: number) {
-    builder.addFieldFloat32(16, imageGuidanceScale, 1.5)
-  }
-
-  static addSeedMode(builder: flatbuffers.Builder, seedMode: SeedMode) {
-    builder.addFieldInt8(17, seedMode, SeedMode.Legacy)
-  }
-
-  static addClipSkip(builder: flatbuffers.Builder, clipSkip: number) {
-    builder.addFieldInt32(18, clipSkip, 1)
-  }
-
-  static addControls(builder: flatbuffers.Builder, controlsOffset: flatbuffers.Offset) {
-    builder.addFieldOffset(19, controlsOffset, 0)
-  }
-
-  static createControlsVector(
-    builder: flatbuffers.Builder,
-    data: flatbuffers.Offset[]
-  ): flatbuffers.Offset {
-    builder.startVector(4, data.length, 4)
-    for (let i = data.length - 1; i >= 0; i--) {
-      builder.addOffset(data[i]!)
-    }
-    return builder.endVector()
-  }
-
-  static startControlsVector(builder: flatbuffers.Builder, numElems: number) {
-    builder.startVector(4, numElems, 4)
-  }
-
-  static addLoras(builder: flatbuffers.Builder, lorasOffset: flatbuffers.Offset) {
-    builder.addFieldOffset(20, lorasOffset, 0)
-  }
-
-  static createLorasVector(
-    builder: flatbuffers.Builder,
-    data: flatbuffers.Offset[]
-  ): flatbuffers.Offset {
-    builder.startVector(4, data.length, 4)
-    for (let i = data.length - 1; i >= 0; i--) {
-      builder.addOffset(data[i]!)
-    }
-    return builder.endVector()
-  }
-
-  static startLorasVector(builder: flatbuffers.Builder, numElems: number) {
-    builder.startVector(4, numElems, 4)
-  }
-
-  static addMaskBlur(builder: flatbuffers.Builder, maskBlur: number) {
-    builder.addFieldFloat32(21, maskBlur, 0.0)
-  }
-
-  static addFaceRestoration(
-    builder: flatbuffers.Builder,
-    faceRestorationOffset: flatbuffers.Offset
-  ) {
-    builder.addFieldOffset(22, faceRestorationOffset, 0)
-  }
-
-  static addClipWeight(builder: flatbuffers.Builder, clipWeight: number) {
-    builder.addFieldFloat32(25, clipWeight, 1.0)
-  }
-
-  static addNegativePromptForImagePrior(
-    builder: flatbuffers.Builder,
-    negativePromptForImagePrior: boolean
-  ) {
-    builder.addFieldInt8(26, +negativePromptForImagePrior, +true)
-  }
-
-  static addImagePriorSteps(builder: flatbuffers.Builder, imagePriorSteps: number) {
-    builder.addFieldInt32(27, imagePriorSteps, 5)
-  }
-
-  static addRefinerModel(builder: flatbuffers.Builder, refinerModelOffset: flatbuffers.Offset) {
-    builder.addFieldOffset(28, refinerModelOffset, 0)
-  }
-
-  static addOriginalImageHeight(builder: flatbuffers.Builder, originalImageHeight: number) {
-    builder.addFieldInt32(29, originalImageHeight, 0)
-  }
-
-  static addOriginalImageWidth(builder: flatbuffers.Builder, originalImageWidth: number) {
-    builder.addFieldInt32(30, originalImageWidth, 0)
-  }
-
-  static addCropTop(builder: flatbuffers.Builder, cropTop: number) {
-    builder.addFieldInt32(31, cropTop, 0)
-  }
-
-  static addCropLeft(builder: flatbuffers.Builder, cropLeft: number) {
-    builder.addFieldInt32(32, cropLeft, 0)
-  }
-
-  static addTargetImageHeight(builder: flatbuffers.Builder, targetImageHeight: number) {
-    builder.addFieldInt32(33, targetImageHeight, 0)
-  }
-
-  static addTargetImageWidth(builder: flatbuffers.Builder, targetImageWidth: number) {
-    builder.addFieldInt32(34, targetImageWidth, 0)
-  }
-
-  static addAestheticScore(builder: flatbuffers.Builder, aestheticScore: number) {
-    builder.addFieldFloat32(35, aestheticScore, 6.0)
-  }
-
-  static addNegativeAestheticScore(builder: flatbuffers.Builder, negativeAestheticScore: number) {
-    builder.addFieldFloat32(36, negativeAestheticScore, 2.5)
-  }
-
-  static addZeroNegativePrompt(builder: flatbuffers.Builder, zeroNegativePrompt: boolean) {
-    builder.addFieldInt8(37, +zeroNegativePrompt, +false)
-  }
-
-  static addRefinerStart(builder: flatbuffers.Builder, refinerStart: number) {
-    builder.addFieldFloat32(38, refinerStart, 0.7)
-  }
-
-  static addNegativeOriginalImageHeight(
-    builder: flatbuffers.Builder,
-    negativeOriginalImageHeight: number
-  ) {
-    builder.addFieldInt32(39, negativeOriginalImageHeight, 0)
-  }
-
-  static addNegativeOriginalImageWidth(
-    builder: flatbuffers.Builder,
-    negativeOriginalImageWidth: number
-  ) {
-    builder.addFieldInt32(40, negativeOriginalImageWidth, 0)
-  }
-
-  static addName(builder: flatbuffers.Builder, nameOffset: flatbuffers.Offset) {
-    builder.addFieldOffset(41, nameOffset, 0)
-  }
-
-  static addFpsId(builder: flatbuffers.Builder, fpsId: number) {
-    builder.addFieldInt32(42, fpsId, 5)
-  }
-
-  static addMotionBucketId(builder: flatbuffers.Builder, motionBucketId: number) {
-    builder.addFieldInt32(43, motionBucketId, 127)
-  }
-
-  static addCondAug(builder: flatbuffers.Builder, condAug: number) {
-    builder.addFieldFloat32(44, condAug, 0.02)
-  }
-
-  static addStartFrameCfg(builder: flatbuffers.Builder, startFrameCfg: number) {
-    builder.addFieldFloat32(45, startFrameCfg, 1.0)
-  }
-
-  static addNumFrames(builder: flatbuffers.Builder, numFrames: number) {
-    builder.addFieldInt32(46, numFrames, 14)
-  }
-
-  static addMaskBlurOutset(builder: flatbuffers.Builder, maskBlurOutset: number) {
-    builder.addFieldInt32(47, maskBlurOutset, 0)
-  }
-
-  static addSharpness(builder: flatbuffers.Builder, sharpness: number) {
-    builder.addFieldFloat32(48, sharpness, 0.0)
-  }
-
-  static addShift(builder: flatbuffers.Builder, shift: number) {
-    builder.addFieldFloat32(49, shift, 1.0)
-  }
-
-  static addStage2Steps(builder: flatbuffers.Builder, stage2Steps: number) {
-    builder.addFieldInt32(50, stage2Steps, 10)
-  }
-
-  static addStage2Cfg(builder: flatbuffers.Builder, stage2Cfg: number) {
-    builder.addFieldFloat32(51, stage2Cfg, 1.0)
-  }
-
-  static addStage2Shift(builder: flatbuffers.Builder, stage2Shift: number) {
-    builder.addFieldFloat32(52, stage2Shift, 1.0)
-  }
-
-  static addTiledDecoding(builder: flatbuffers.Builder, tiledDecoding: boolean) {
-    builder.addFieldInt8(53, +tiledDecoding, +false)
-  }
-
-  static addDecodingTileWidth(builder: flatbuffers.Builder, decodingTileWidth: number) {
-    builder.addFieldInt16(54, decodingTileWidth, 10)
-  }
-
-  static addDecodingTileHeight(builder: flatbuffers.Builder, decodingTileHeight: number) {
-    builder.addFieldInt16(55, decodingTileHeight, 10)
-  }
-
-  static addDecodingTileOverlap(builder: flatbuffers.Builder, decodingTileOverlap: number) {
-    builder.addFieldInt16(56, decodingTileOverlap, 2)
-  }
-
-  static addStochasticSamplingGamma(builder: flatbuffers.Builder, stochasticSamplingGamma: number) {
-    builder.addFieldFloat32(57, stochasticSamplingGamma, 0.3)
-  }
-
-  static addPreserveOriginalAfterInpaint(
-    builder: flatbuffers.Builder,
-    preserveOriginalAfterInpaint: boolean
-  ) {
-    builder.addFieldInt8(58, +preserveOriginalAfterInpaint, +true)
-  }
-
-  static addTiledDiffusion(builder: flatbuffers.Builder, tiledDiffusion: boolean) {
-    builder.addFieldInt8(59, +tiledDiffusion, +false)
-  }
-
-  static addDiffusionTileWidth(builder: flatbuffers.Builder, diffusionTileWidth: number) {
-    builder.addFieldInt16(60, diffusionTileWidth, 16)
-  }
-
-  static addDiffusionTileHeight(builder: flatbuffers.Builder, diffusionTileHeight: number) {
-    builder.addFieldInt16(61, diffusionTileHeight, 16)
-  }
-
-  static addDiffusionTileOverlap(builder: flatbuffers.Builder, diffusionTileOverlap: number) {
-    builder.addFieldInt16(62, diffusionTileOverlap, 2)
-  }
-
-  static addUpscalerScaleFactor(builder: flatbuffers.Builder, upscalerScaleFactor: number) {
-    builder.addFieldInt8(63, upscalerScaleFactor, 0)
-  }
-
-  static addT5TextEncoder(builder: flatbuffers.Builder, t5TextEncoder: boolean) {
-    builder.addFieldInt8(64, +t5TextEncoder, +true)
-  }
-
-  static addSeparateClipL(builder: flatbuffers.Builder, separateClipL: boolean) {
-    builder.addFieldInt8(65, +separateClipL, +false)
-  }
-
-  static addClipLText(builder: flatbuffers.Builder, clipLTextOffset: flatbuffers.Offset) {
-    builder.addFieldOffset(66, clipLTextOffset, 0)
-  }
-
-  static addSeparateOpenClipG(builder: flatbuffers.Builder, separateOpenClipG: boolean) {
-    builder.addFieldInt8(67, +separateOpenClipG, +false)
-  }
-
-  static addOpenClipGText(builder: flatbuffers.Builder, openClipGTextOffset: flatbuffers.Offset) {
-    builder.addFieldOffset(68, openClipGTextOffset, 0)
-  }
-
-  static addSpeedUpWithGuidanceEmbed(
-    builder: flatbuffers.Builder,
-    speedUpWithGuidanceEmbed: boolean
-  ) {
-    builder.addFieldInt8(69, +speedUpWithGuidanceEmbed, +true)
-  }
-
-  static addGuidanceEmbed(builder: flatbuffers.Builder, guidanceEmbed: number) {
-    builder.addFieldFloat32(70, guidanceEmbed, 3.5)
-  }
-
-  static addResolutionDependentShift(
-    builder: flatbuffers.Builder,
-    resolutionDependentShift: boolean
-  ) {
-    builder.addFieldInt8(71, +resolutionDependentShift, +true)
-  }
-
-  static endGenerationConfiguration(builder: flatbuffers.Builder): flatbuffers.Offset {
-    const offset = builder.endObject()
-    return offset
-  }
-
-  static finishGenerationConfigurationBuffer(
-    builder: flatbuffers.Builder,
-    offset: flatbuffers.Offset
-  ) {
-    builder.finish(offset)
-  }
-
-  static finishSizePrefixedGenerationConfigurationBuffer(
-    builder: flatbuffers.Builder,
-    offset: flatbuffers.Offset
-  ) {
-    builder.finish(offset, undefined, true)
-  }
-
-  static createGenerationConfiguration(
-    builder: flatbuffers.Builder,
-    id: bigint,
-    startWidth: number,
-    startHeight: number,
-    seed: number,
-    steps: number,
-    guidanceScale: number,
-    strength: number,
-    modelOffset: flatbuffers.Offset,
-    sampler: SamplerType,
-    batchCount: number,
-    batchSize: number,
-    hiresFix: boolean,
-    hiresFixStartWidth: number,
-    hiresFixStartHeight: number,
-    hiresFixStrength: number,
-    upscalerOffset: flatbuffers.Offset,
-    imageGuidanceScale: number,
-    seedMode: SeedMode,
-    clipSkip: number,
-    controlsOffset: flatbuffers.Offset,
-    lorasOffset: flatbuffers.Offset,
-    maskBlur: number,
-    faceRestorationOffset: flatbuffers.Offset,
-    clipWeight: number,
-    negativePromptForImagePrior: boolean,
-    imagePriorSteps: number,
-    refinerModelOffset: flatbuffers.Offset,
-    originalImageHeight: number,
-    originalImageWidth: number,
-    cropTop: number,
-    cropLeft: number,
-    targetImageHeight: number,
-    targetImageWidth: number,
-    aestheticScore: number,
-    negativeAestheticScore: number,
-    zeroNegativePrompt: boolean,
-    refinerStart: number,
-    negativeOriginalImageHeight: number,
-    negativeOriginalImageWidth: number,
-    nameOffset: flatbuffers.Offset,
-    fpsId: number,
-    motionBucketId: number,
-    condAug: number,
-    startFrameCfg: number,
-    numFrames: number,
-    maskBlurOutset: number,
-    sharpness: number,
-    shift: number,
-    stage2Steps: number,
-    stage2Cfg: number,
-    stage2Shift: number,
-    tiledDecoding: boolean,
-    decodingTileWidth: number,
-    decodingTileHeight: number,
-    decodingTileOverlap: number,
-    stochasticSamplingGamma: number,
-    preserveOriginalAfterInpaint: boolean,
-    tiledDiffusion: boolean,
-    diffusionTileWidth: number,
-    diffusionTileHeight: number,
-    diffusionTileOverlap: number,
-    upscalerScaleFactor: number,
-    t5TextEncoder: boolean,
-    separateClipL: boolean,
-    clipLTextOffset: flatbuffers.Offset,
-    separateOpenClipG: boolean,
-    openClipGTextOffset: flatbuffers.Offset,
-    speedUpWithGuidanceEmbed: boolean,
-    guidanceEmbed: number,
-    resolutionDependentShift: boolean
-  ): flatbuffers.Offset {
-    GenerationConfiguration.startGenerationConfiguration(builder)
-    GenerationConfiguration.addId(builder, id)
-    GenerationConfiguration.addStartWidth(builder, startWidth)
-    GenerationConfiguration.addStartHeight(builder, startHeight)
-    GenerationConfiguration.addSeed(builder, seed)
-    GenerationConfiguration.addSteps(builder, steps)
-    GenerationConfiguration.addGuidanceScale(builder, guidanceScale)
-    GenerationConfiguration.addStrength(builder, strength)
-    GenerationConfiguration.addModel(builder, modelOffset)
-    GenerationConfiguration.addSampler(builder, sampler)
-    GenerationConfiguration.addBatchCount(builder, batchCount)
-    GenerationConfiguration.addBatchSize(builder, batchSize)
-    GenerationConfiguration.addHiresFix(builder, hiresFix)
-    GenerationConfiguration.addHiresFixStartWidth(builder, hiresFixStartWidth)
-    GenerationConfiguration.addHiresFixStartHeight(builder, hiresFixStartHeight)
-    GenerationConfiguration.addHiresFixStrength(builder, hiresFixStrength)
-    GenerationConfiguration.addUpscaler(builder, upscalerOffset)
-    GenerationConfiguration.addImageGuidanceScale(builder, imageGuidanceScale)
-    GenerationConfiguration.addSeedMode(builder, seedMode)
-    GenerationConfiguration.addClipSkip(builder, clipSkip)
-    GenerationConfiguration.addControls(builder, controlsOffset)
-    GenerationConfiguration.addLoras(builder, lorasOffset)
-    GenerationConfiguration.addMaskBlur(builder, maskBlur)
-    GenerationConfiguration.addFaceRestoration(builder, faceRestorationOffset)
-    GenerationConfiguration.addClipWeight(builder, clipWeight)
-    GenerationConfiguration.addNegativePromptForImagePrior(builder, negativePromptForImagePrior)
-    GenerationConfiguration.addImagePriorSteps(builder, imagePriorSteps)
-    GenerationConfiguration.addRefinerModel(builder, refinerModelOffset)
-    GenerationConfiguration.addOriginalImageHeight(builder, originalImageHeight)
-    GenerationConfiguration.addOriginalImageWidth(builder, originalImageWidth)
-    GenerationConfiguration.addCropTop(builder, cropTop)
-    GenerationConfiguration.addCropLeft(builder, cropLeft)
-    GenerationConfiguration.addTargetImageHeight(builder, targetImageHeight)
-    GenerationConfiguration.addTargetImageWidth(builder, targetImageWidth)
-    GenerationConfiguration.addAestheticScore(builder, aestheticScore)
-    GenerationConfiguration.addNegativeAestheticScore(builder, negativeAestheticScore)
-    GenerationConfiguration.addZeroNegativePrompt(builder, zeroNegativePrompt)
-    GenerationConfiguration.addRefinerStart(builder, refinerStart)
-    GenerationConfiguration.addNegativeOriginalImageHeight(builder, negativeOriginalImageHeight)
-    GenerationConfiguration.addNegativeOriginalImageWidth(builder, negativeOriginalImageWidth)
-    GenerationConfiguration.addName(builder, nameOffset)
-    GenerationConfiguration.addFpsId(builder, fpsId)
-    GenerationConfiguration.addMotionBucketId(builder, motionBucketId)
-    GenerationConfiguration.addCondAug(builder, condAug)
-    GenerationConfiguration.addStartFrameCfg(builder, startFrameCfg)
-    GenerationConfiguration.addNumFrames(builder, numFrames)
-    GenerationConfiguration.addMaskBlurOutset(builder, maskBlurOutset)
-    GenerationConfiguration.addSharpness(builder, sharpness)
-    GenerationConfiguration.addShift(builder, shift)
-    GenerationConfiguration.addStage2Steps(builder, stage2Steps)
-    GenerationConfiguration.addStage2Cfg(builder, stage2Cfg)
-    GenerationConfiguration.addStage2Shift(builder, stage2Shift)
-    GenerationConfiguration.addTiledDecoding(builder, tiledDecoding)
-    GenerationConfiguration.addDecodingTileWidth(builder, decodingTileWidth)
-    GenerationConfiguration.addDecodingTileHeight(builder, decodingTileHeight)
-    GenerationConfiguration.addDecodingTileOverlap(builder, decodingTileOverlap)
-    GenerationConfiguration.addStochasticSamplingGamma(builder, stochasticSamplingGamma)
-    GenerationConfiguration.addPreserveOriginalAfterInpaint(builder, preserveOriginalAfterInpaint)
-    GenerationConfiguration.addTiledDiffusion(builder, tiledDiffusion)
-    GenerationConfiguration.addDiffusionTileWidth(builder, diffusionTileWidth)
-    GenerationConfiguration.addDiffusionTileHeight(builder, diffusionTileHeight)
-    GenerationConfiguration.addDiffusionTileOverlap(builder, diffusionTileOverlap)
-    GenerationConfiguration.addUpscalerScaleFactor(builder, upscalerScaleFactor)
-    GenerationConfiguration.addT5TextEncoder(builder, t5TextEncoder)
-    GenerationConfiguration.addSeparateClipL(builder, separateClipL)
-    GenerationConfiguration.addClipLText(builder, clipLTextOffset)
-    GenerationConfiguration.addSeparateOpenClipG(builder, separateOpenClipG)
-    GenerationConfiguration.addOpenClipGText(builder, openClipGTextOffset)
-    GenerationConfiguration.addSpeedUpWithGuidanceEmbed(builder, speedUpWithGuidanceEmbed)
-    GenerationConfiguration.addGuidanceEmbed(builder, guidanceEmbed)
-    GenerationConfiguration.addResolutionDependentShift(builder, resolutionDependentShift)
-    return GenerationConfiguration.endGenerationConfiguration(builder)
-  }
-
-  unpack(): GenerationConfigurationT {
-    return new GenerationConfigurationT(
-      this.id(),
-      this.startWidth(),
-      this.startHeight(),
-      this.seed(),
-      this.steps(),
-      this.guidanceScale(),
-      this.strength(),
-      this.model(),
-      this.sampler(),
-      this.batchCount(),
-      this.batchSize(),
-      this.hiresFix(),
-      this.hiresFixStartWidth(),
-      this.hiresFixStartHeight(),
-      this.hiresFixStrength(),
-      this.upscaler(),
-      this.imageGuidanceScale(),
-      this.seedMode(),
-      this.clipSkip(),
-      this.bb!.createObjList<Control, ControlT>(this.controls.bind(this), this.controlsLength()),
-      this.bb!.createObjList<LoRA, LoRAT>(this.loras.bind(this), this.lorasLength()),
-      this.maskBlur(),
-      this.faceRestoration(),
-      this.clipWeight(),
-      this.negativePromptForImagePrior(),
-      this.imagePriorSteps(),
-      this.refinerModel(),
-      this.originalImageHeight(),
-      this.originalImageWidth(),
-      this.cropTop(),
-      this.cropLeft(),
-      this.targetImageHeight(),
-      this.targetImageWidth(),
-      this.aestheticScore(),
-      this.negativeAestheticScore(),
-      this.zeroNegativePrompt(),
-      this.refinerStart(),
-      this.negativeOriginalImageHeight(),
-      this.negativeOriginalImageWidth(),
-      this.name(),
-      this.fpsId(),
-      this.motionBucketId(),
-      this.condAug(),
-      this.startFrameCfg(),
-      this.numFrames(),
-      this.maskBlurOutset(),
-      this.sharpness(),
-      this.shift(),
-      this.stage2Steps(),
-      this.stage2Cfg(),
-      this.stage2Shift(),
-      this.tiledDecoding(),
-      this.decodingTileWidth(),
-      this.decodingTileHeight(),
-      this.decodingTileOverlap(),
-      this.stochasticSamplingGamma(),
-      this.preserveOriginalAfterInpaint(),
-      this.tiledDiffusion(),
-      this.diffusionTileWidth(),
-      this.diffusionTileHeight(),
-      this.diffusionTileOverlap(),
-      this.upscalerScaleFactor(),
-      this.t5TextEncoder(),
-      this.separateClipL(),
-      this.clipLText(),
-      this.separateOpenClipG(),
-      this.openClipGText(),
-      this.speedUpWithGuidanceEmbed(),
-      this.guidanceEmbed(),
-      this.resolutionDependentShift()
-    )
-  }
-
-  unpackTo(_o: GenerationConfigurationT): void {
-    _o.id = this.id()
-    _o.startWidth = this.startWidth()
-    _o.startHeight = this.startHeight()
-    _o.seed = this.seed()
-    _o.steps = this.steps()
-    _o.guidanceScale = this.guidanceScale()
-    _o.strength = this.strength()
-    _o.model = this.model()
-    _o.sampler = this.sampler()
-    _o.batchCount = this.batchCount()
-    _o.batchSize = this.batchSize()
-    _o.hiresFix = this.hiresFix()
-    _o.hiresFixStartWidth = this.hiresFixStartWidth()
-    _o.hiresFixStartHeight = this.hiresFixStartHeight()
-    _o.hiresFixStrength = this.hiresFixStrength()
-    _o.upscaler = this.upscaler()
-    _o.imageGuidanceScale = this.imageGuidanceScale()
-    _o.seedMode = this.seedMode()
-    _o.clipSkip = this.clipSkip()
-    _o.controls = this.bb!.createObjList<Control, ControlT>(
-      this.controls.bind(this),
-      this.controlsLength()
-    )
-    _o.loras = this.bb!.createObjList<LoRA, LoRAT>(this.loras.bind(this), this.lorasLength())
-    _o.maskBlur = this.maskBlur()
-    _o.faceRestoration = this.faceRestoration()
-    _o.clipWeight = this.clipWeight()
-    _o.negativePromptForImagePrior = this.negativePromptForImagePrior()
-    _o.imagePriorSteps = this.imagePriorSteps()
-    _o.refinerModel = this.refinerModel()
-    _o.originalImageHeight = this.originalImageHeight()
-    _o.originalImageWidth = this.originalImageWidth()
-    _o.cropTop = this.cropTop()
-    _o.cropLeft = this.cropLeft()
-    _o.targetImageHeight = this.targetImageHeight()
-    _o.targetImageWidth = this.targetImageWidth()
-    _o.aestheticScore = this.aestheticScore()
-    _o.negativeAestheticScore = this.negativeAestheticScore()
-    _o.zeroNegativePrompt = this.zeroNegativePrompt()
-    _o.refinerStart = this.refinerStart()
-    _o.negativeOriginalImageHeight = this.negativeOriginalImageHeight()
-    _o.negativeOriginalImageWidth = this.negativeOriginalImageWidth()
-    _o.name = this.name()
-    _o.fpsId = this.fpsId()
-    _o.motionBucketId = this.motionBucketId()
-    _o.condAug = this.condAug()
-    _o.startFrameCfg = this.startFrameCfg()
-    _o.numFrames = this.numFrames()
-    _o.maskBlurOutset = this.maskBlurOutset()
-    _o.sharpness = this.sharpness()
-    _o.shift = this.shift()
-    _o.stage2Steps = this.stage2Steps()
-    _o.stage2Cfg = this.stage2Cfg()
-    _o.stage2Shift = this.stage2Shift()
-    _o.tiledDecoding = this.tiledDecoding()
-    _o.decodingTileWidth = this.decodingTileWidth()
-    _o.decodingTileHeight = this.decodingTileHeight()
-    _o.decodingTileOverlap = this.decodingTileOverlap()
-    _o.stochasticSamplingGamma = this.stochasticSamplingGamma()
-    _o.preserveOriginalAfterInpaint = this.preserveOriginalAfterInpaint()
-    _o.tiledDiffusion = this.tiledDiffusion()
-    _o.diffusionTileWidth = this.diffusionTileWidth()
-    _o.diffusionTileHeight = this.diffusionTileHeight()
-    _o.diffusionTileOverlap = this.diffusionTileOverlap()
-    _o.upscalerScaleFactor = this.upscalerScaleFactor()
-    _o.t5TextEncoder = this.t5TextEncoder()
-    _o.separateClipL = this.separateClipL()
-    _o.clipLText = this.clipLText()
-    _o.separateOpenClipG = this.separateOpenClipG()
-    _o.openClipGText = this.openClipGText()
-    _o.speedUpWithGuidanceEmbed = this.speedUpWithGuidanceEmbed()
-    _o.guidanceEmbed = this.guidanceEmbed()
-    _o.resolutionDependentShift = this.resolutionDependentShift()
-  }
+import * as flatbuffers from 'flatbuffers';
+
+import { Control, ControlT } from './control.js';
+import { LoRA, LoRAT } from './lo-ra.js';
+import { SamplerType } from './sampler-type.js';
+import { SeedMode } from './seed-mode.js';
+
+
+export class GenerationConfiguration implements flatbuffers.IUnpackableObject<GenerationConfigurationT> {
+  bb: flatbuffers.ByteBuffer|null = null;
+  bb_pos = 0;
+  __init(i:number, bb:flatbuffers.ByteBuffer):GenerationConfiguration {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+}
+
+static getRootAsGenerationConfiguration(bb:flatbuffers.ByteBuffer, obj?:GenerationConfiguration):GenerationConfiguration {
+  return (obj || new GenerationConfiguration()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+}
+
+static getSizePrefixedRootAsGenerationConfiguration(bb:flatbuffers.ByteBuffer, obj?:GenerationConfiguration):GenerationConfiguration {
+  bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
+  return (obj || new GenerationConfiguration()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+}
+
+id():bigint {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readInt64(this.bb_pos + offset) : BigInt('0');
+}
+
+startWidth():number {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+}
+
+startHeight():number {
+  const offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+}
+
+seed():number {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+steps():number {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+guidanceScale():number {
+  const offset = this.bb!.__offset(this.bb_pos, 14);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
+}
+
+strength():number {
+  const offset = this.bb!.__offset(this.bb_pos, 16);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
+}
+
+model():string|null
+model(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+model(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 18);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+sampler():SamplerType {
+  const offset = this.bb!.__offset(this.bb_pos, 20);
+  return offset ? this.bb!.readInt8(this.bb_pos + offset) : SamplerType.DPMPP2MKarras;
+}
+
+batchCount():number {
+  const offset = this.bb!.__offset(this.bb_pos, 22);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 1;
+}
+
+batchSize():number {
+  const offset = this.bb!.__offset(this.bb_pos, 24);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 1;
+}
+
+hiresFix():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 26);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+hiresFixStartWidth():number {
+  const offset = this.bb!.__offset(this.bb_pos, 28);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+}
+
+hiresFixStartHeight():number {
+  const offset = this.bb!.__offset(this.bb_pos, 30);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+}
+
+hiresFixStrength():number {
+  const offset = this.bb!.__offset(this.bb_pos, 32);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.7;
+}
+
+upscaler():string|null
+upscaler(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+upscaler(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 34);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+imageGuidanceScale():number {
+  const offset = this.bb!.__offset(this.bb_pos, 36);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.5;
+}
+
+seedMode():SeedMode {
+  const offset = this.bb!.__offset(this.bb_pos, 38);
+  return offset ? this.bb!.readInt8(this.bb_pos + offset) : SeedMode.Legacy;
+}
+
+clipSkip():number {
+  const offset = this.bb!.__offset(this.bb_pos, 40);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 1;
+}
+
+controls(index: number, obj?:Control):Control|null {
+  const offset = this.bb!.__offset(this.bb_pos, 42);
+  return offset ? (obj || new Control()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+}
+
+controlsLength():number {
+  const offset = this.bb!.__offset(this.bb_pos, 42);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+}
+
+loras(index: number, obj?:LoRA):LoRA|null {
+  const offset = this.bb!.__offset(this.bb_pos, 44);
+  return offset ? (obj || new LoRA()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+}
+
+lorasLength():number {
+  const offset = this.bb!.__offset(this.bb_pos, 44);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+}
+
+maskBlur():number {
+  const offset = this.bb!.__offset(this.bb_pos, 46);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
+}
+
+faceRestoration():string|null
+faceRestoration(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+faceRestoration(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 48);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+clipWeight():number {
+  const offset = this.bb!.__offset(this.bb_pos, 54);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0;
+}
+
+negativePromptForImagePrior():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 56);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true;
+}
+
+imagePriorSteps():number {
+  const offset = this.bb!.__offset(this.bb_pos, 58);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 5;
+}
+
+refinerModel():string|null
+refinerModel(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+refinerModel(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 60);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+originalImageHeight():number {
+  const offset = this.bb!.__offset(this.bb_pos, 62);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+originalImageWidth():number {
+  const offset = this.bb!.__offset(this.bb_pos, 64);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+cropTop():number {
+  const offset = this.bb!.__offset(this.bb_pos, 66);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
+cropLeft():number {
+  const offset = this.bb!.__offset(this.bb_pos, 68);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
+targetImageHeight():number {
+  const offset = this.bb!.__offset(this.bb_pos, 70);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+targetImageWidth():number {
+  const offset = this.bb!.__offset(this.bb_pos, 72);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+aestheticScore():number {
+  const offset = this.bb!.__offset(this.bb_pos, 74);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 6.0;
+}
+
+negativeAestheticScore():number {
+  const offset = this.bb!.__offset(this.bb_pos, 76);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 2.5;
+}
+
+zeroNegativePrompt():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 78);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+refinerStart():number {
+  const offset = this.bb!.__offset(this.bb_pos, 80);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.7;
+}
+
+negativeOriginalImageHeight():number {
+  const offset = this.bb!.__offset(this.bb_pos, 82);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+negativeOriginalImageWidth():number {
+  const offset = this.bb!.__offset(this.bb_pos, 84);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+name():string|null
+name(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+name(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 86);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+fpsId():number {
+  const offset = this.bb!.__offset(this.bb_pos, 88);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 5;
+}
+
+motionBucketId():number {
+  const offset = this.bb!.__offset(this.bb_pos, 90);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 127;
+}
+
+condAug():number {
+  const offset = this.bb!.__offset(this.bb_pos, 92);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.02;
+}
+
+startFrameCfg():number {
+  const offset = this.bb!.__offset(this.bb_pos, 94);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0;
+}
+
+numFrames():number {
+  const offset = this.bb!.__offset(this.bb_pos, 96);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 14;
+}
+
+maskBlurOutset():number {
+  const offset = this.bb!.__offset(this.bb_pos, 98);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
+sharpness():number {
+  const offset = this.bb!.__offset(this.bb_pos, 100);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
+}
+
+shift():number {
+  const offset = this.bb!.__offset(this.bb_pos, 102);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0;
+}
+
+stage2Steps():number {
+  const offset = this.bb!.__offset(this.bb_pos, 104);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 10;
+}
+
+stage2Cfg():number {
+  const offset = this.bb!.__offset(this.bb_pos, 106);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0;
+}
+
+stage2Shift():number {
+  const offset = this.bb!.__offset(this.bb_pos, 108);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.0;
+}
+
+tiledDecoding():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 110);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+decodingTileWidth():number {
+  const offset = this.bb!.__offset(this.bb_pos, 112);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 10;
+}
+
+decodingTileHeight():number {
+  const offset = this.bb!.__offset(this.bb_pos, 114);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 10;
+}
+
+decodingTileOverlap():number {
+  const offset = this.bb!.__offset(this.bb_pos, 116);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 2;
+}
+
+stochasticSamplingGamma():number {
+  const offset = this.bb!.__offset(this.bb_pos, 118);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.3;
+}
+
+preserveOriginalAfterInpaint():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 120);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true;
+}
+
+tiledDiffusion():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 122);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+diffusionTileWidth():number {
+  const offset = this.bb!.__offset(this.bb_pos, 124);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 16;
+}
+
+diffusionTileHeight():number {
+  const offset = this.bb!.__offset(this.bb_pos, 126);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 16;
+}
+
+diffusionTileOverlap():number {
+  const offset = this.bb!.__offset(this.bb_pos, 128);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 2;
+}
+
+upscalerScaleFactor():number {
+  const offset = this.bb!.__offset(this.bb_pos, 130);
+  return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+}
+
+t5TextEncoder():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 132);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true;
+}
+
+separateClipL():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 134);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+clipLText():string|null
+clipLText(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+clipLText(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 136);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+separateOpenClipG():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 138);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+openClipGText():string|null
+openClipGText(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+openClipGText(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 140);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+speedUpWithGuidanceEmbed():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 142);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true;
+}
+
+guidanceEmbed():number {
+  const offset = this.bb!.__offset(this.bb_pos, 144);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 3.5;
+}
+
+resolutionDependentShift():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 146);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true;
+}
+
+teaCacheStart():number {
+  const offset = this.bb!.__offset(this.bb_pos, 148);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 5;
+}
+
+teaCacheEnd():number {
+  const offset = this.bb!.__offset(this.bb_pos, 150);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : -1;
+}
+
+teaCacheThreshold():number {
+  const offset = this.bb!.__offset(this.bb_pos, 152);
+  return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.06;
+}
+
+teaCache():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 154);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+separateT5():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 156);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+t5Text():string|null
+t5Text(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+t5Text(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 158);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
+teaCacheMaxSkipSteps():number {
+  const offset = this.bb!.__offset(this.bb_pos, 160);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 3;
+}
+
+static startGenerationConfiguration(builder:flatbuffers.Builder) {
+  builder.startObject(79);
+}
+
+static addId(builder:flatbuffers.Builder, id:bigint) {
+  builder.addFieldInt64(0, id, BigInt('0'));
+}
+
+static addStartWidth(builder:flatbuffers.Builder, startWidth:number) {
+  builder.addFieldInt16(1, startWidth, 0);
+}
+
+static addStartHeight(builder:flatbuffers.Builder, startHeight:number) {
+  builder.addFieldInt16(2, startHeight, 0);
+}
+
+static addSeed(builder:flatbuffers.Builder, seed:number) {
+  builder.addFieldInt32(3, seed, 0);
+}
+
+static addSteps(builder:flatbuffers.Builder, steps:number) {
+  builder.addFieldInt32(4, steps, 0);
+}
+
+static addGuidanceScale(builder:flatbuffers.Builder, guidanceScale:number) {
+  builder.addFieldFloat32(5, guidanceScale, 0.0);
+}
+
+static addStrength(builder:flatbuffers.Builder, strength:number) {
+  builder.addFieldFloat32(6, strength, 0.0);
+}
+
+static addModel(builder:flatbuffers.Builder, modelOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(7, modelOffset, 0);
+}
+
+static addSampler(builder:flatbuffers.Builder, sampler:SamplerType) {
+  builder.addFieldInt8(8, sampler, SamplerType.DPMPP2MKarras);
+}
+
+static addBatchCount(builder:flatbuffers.Builder, batchCount:number) {
+  builder.addFieldInt32(9, batchCount, 1);
+}
+
+static addBatchSize(builder:flatbuffers.Builder, batchSize:number) {
+  builder.addFieldInt32(10, batchSize, 1);
+}
+
+static addHiresFix(builder:flatbuffers.Builder, hiresFix:boolean) {
+  builder.addFieldInt8(11, +hiresFix, +false);
+}
+
+static addHiresFixStartWidth(builder:flatbuffers.Builder, hiresFixStartWidth:number) {
+  builder.addFieldInt16(12, hiresFixStartWidth, 0);
+}
+
+static addHiresFixStartHeight(builder:flatbuffers.Builder, hiresFixStartHeight:number) {
+  builder.addFieldInt16(13, hiresFixStartHeight, 0);
+}
+
+static addHiresFixStrength(builder:flatbuffers.Builder, hiresFixStrength:number) {
+  builder.addFieldFloat32(14, hiresFixStrength, 0.7);
+}
+
+static addUpscaler(builder:flatbuffers.Builder, upscalerOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(15, upscalerOffset, 0);
+}
+
+static addImageGuidanceScale(builder:flatbuffers.Builder, imageGuidanceScale:number) {
+  builder.addFieldFloat32(16, imageGuidanceScale, 1.5);
+}
+
+static addSeedMode(builder:flatbuffers.Builder, seedMode:SeedMode) {
+  builder.addFieldInt8(17, seedMode, SeedMode.Legacy);
+}
+
+static addClipSkip(builder:flatbuffers.Builder, clipSkip:number) {
+  builder.addFieldInt32(18, clipSkip, 1);
+}
+
+static addControls(builder:flatbuffers.Builder, controlsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(19, controlsOffset, 0);
+}
+
+static createControlsVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (let i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]!);
+  }
+  return builder.endVector();
+}
+
+static startControlsVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+}
+
+static addLoras(builder:flatbuffers.Builder, lorasOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(20, lorasOffset, 0);
+}
+
+static createLorasVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (let i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]!);
+  }
+  return builder.endVector();
+}
+
+static startLorasVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+}
+
+static addMaskBlur(builder:flatbuffers.Builder, maskBlur:number) {
+  builder.addFieldFloat32(21, maskBlur, 0.0);
+}
+
+static addFaceRestoration(builder:flatbuffers.Builder, faceRestorationOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(22, faceRestorationOffset, 0);
+}
+
+static addClipWeight(builder:flatbuffers.Builder, clipWeight:number) {
+  builder.addFieldFloat32(25, clipWeight, 1.0);
+}
+
+static addNegativePromptForImagePrior(builder:flatbuffers.Builder, negativePromptForImagePrior:boolean) {
+  builder.addFieldInt8(26, +negativePromptForImagePrior, +true);
+}
+
+static addImagePriorSteps(builder:flatbuffers.Builder, imagePriorSteps:number) {
+  builder.addFieldInt32(27, imagePriorSteps, 5);
+}
+
+static addRefinerModel(builder:flatbuffers.Builder, refinerModelOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(28, refinerModelOffset, 0);
+}
+
+static addOriginalImageHeight(builder:flatbuffers.Builder, originalImageHeight:number) {
+  builder.addFieldInt32(29, originalImageHeight, 0);
+}
+
+static addOriginalImageWidth(builder:flatbuffers.Builder, originalImageWidth:number) {
+  builder.addFieldInt32(30, originalImageWidth, 0);
+}
+
+static addCropTop(builder:flatbuffers.Builder, cropTop:number) {
+  builder.addFieldInt32(31, cropTop, 0);
+}
+
+static addCropLeft(builder:flatbuffers.Builder, cropLeft:number) {
+  builder.addFieldInt32(32, cropLeft, 0);
+}
+
+static addTargetImageHeight(builder:flatbuffers.Builder, targetImageHeight:number) {
+  builder.addFieldInt32(33, targetImageHeight, 0);
+}
+
+static addTargetImageWidth(builder:flatbuffers.Builder, targetImageWidth:number) {
+  builder.addFieldInt32(34, targetImageWidth, 0);
+}
+
+static addAestheticScore(builder:flatbuffers.Builder, aestheticScore:number) {
+  builder.addFieldFloat32(35, aestheticScore, 6.0);
+}
+
+static addNegativeAestheticScore(builder:flatbuffers.Builder, negativeAestheticScore:number) {
+  builder.addFieldFloat32(36, negativeAestheticScore, 2.5);
+}
+
+static addZeroNegativePrompt(builder:flatbuffers.Builder, zeroNegativePrompt:boolean) {
+  builder.addFieldInt8(37, +zeroNegativePrompt, +false);
+}
+
+static addRefinerStart(builder:flatbuffers.Builder, refinerStart:number) {
+  builder.addFieldFloat32(38, refinerStart, 0.7);
+}
+
+static addNegativeOriginalImageHeight(builder:flatbuffers.Builder, negativeOriginalImageHeight:number) {
+  builder.addFieldInt32(39, negativeOriginalImageHeight, 0);
+}
+
+static addNegativeOriginalImageWidth(builder:flatbuffers.Builder, negativeOriginalImageWidth:number) {
+  builder.addFieldInt32(40, negativeOriginalImageWidth, 0);
+}
+
+static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(41, nameOffset, 0);
+}
+
+static addFpsId(builder:flatbuffers.Builder, fpsId:number) {
+  builder.addFieldInt32(42, fpsId, 5);
+}
+
+static addMotionBucketId(builder:flatbuffers.Builder, motionBucketId:number) {
+  builder.addFieldInt32(43, motionBucketId, 127);
+}
+
+static addCondAug(builder:flatbuffers.Builder, condAug:number) {
+  builder.addFieldFloat32(44, condAug, 0.02);
+}
+
+static addStartFrameCfg(builder:flatbuffers.Builder, startFrameCfg:number) {
+  builder.addFieldFloat32(45, startFrameCfg, 1.0);
+}
+
+static addNumFrames(builder:flatbuffers.Builder, numFrames:number) {
+  builder.addFieldInt32(46, numFrames, 14);
+}
+
+static addMaskBlurOutset(builder:flatbuffers.Builder, maskBlurOutset:number) {
+  builder.addFieldInt32(47, maskBlurOutset, 0);
+}
+
+static addSharpness(builder:flatbuffers.Builder, sharpness:number) {
+  builder.addFieldFloat32(48, sharpness, 0.0);
+}
+
+static addShift(builder:flatbuffers.Builder, shift:number) {
+  builder.addFieldFloat32(49, shift, 1.0);
+}
+
+static addStage2Steps(builder:flatbuffers.Builder, stage2Steps:number) {
+  builder.addFieldInt32(50, stage2Steps, 10);
+}
+
+static addStage2Cfg(builder:flatbuffers.Builder, stage2Cfg:number) {
+  builder.addFieldFloat32(51, stage2Cfg, 1.0);
+}
+
+static addStage2Shift(builder:flatbuffers.Builder, stage2Shift:number) {
+  builder.addFieldFloat32(52, stage2Shift, 1.0);
+}
+
+static addTiledDecoding(builder:flatbuffers.Builder, tiledDecoding:boolean) {
+  builder.addFieldInt8(53, +tiledDecoding, +false);
+}
+
+static addDecodingTileWidth(builder:flatbuffers.Builder, decodingTileWidth:number) {
+  builder.addFieldInt16(54, decodingTileWidth, 10);
+}
+
+static addDecodingTileHeight(builder:flatbuffers.Builder, decodingTileHeight:number) {
+  builder.addFieldInt16(55, decodingTileHeight, 10);
+}
+
+static addDecodingTileOverlap(builder:flatbuffers.Builder, decodingTileOverlap:number) {
+  builder.addFieldInt16(56, decodingTileOverlap, 2);
+}
+
+static addStochasticSamplingGamma(builder:flatbuffers.Builder, stochasticSamplingGamma:number) {
+  builder.addFieldFloat32(57, stochasticSamplingGamma, 0.3);
+}
+
+static addPreserveOriginalAfterInpaint(builder:flatbuffers.Builder, preserveOriginalAfterInpaint:boolean) {
+  builder.addFieldInt8(58, +preserveOriginalAfterInpaint, +true);
+}
+
+static addTiledDiffusion(builder:flatbuffers.Builder, tiledDiffusion:boolean) {
+  builder.addFieldInt8(59, +tiledDiffusion, +false);
+}
+
+static addDiffusionTileWidth(builder:flatbuffers.Builder, diffusionTileWidth:number) {
+  builder.addFieldInt16(60, diffusionTileWidth, 16);
+}
+
+static addDiffusionTileHeight(builder:flatbuffers.Builder, diffusionTileHeight:number) {
+  builder.addFieldInt16(61, diffusionTileHeight, 16);
+}
+
+static addDiffusionTileOverlap(builder:flatbuffers.Builder, diffusionTileOverlap:number) {
+  builder.addFieldInt16(62, diffusionTileOverlap, 2);
+}
+
+static addUpscalerScaleFactor(builder:flatbuffers.Builder, upscalerScaleFactor:number) {
+  builder.addFieldInt8(63, upscalerScaleFactor, 0);
+}
+
+static addT5TextEncoder(builder:flatbuffers.Builder, t5TextEncoder:boolean) {
+  builder.addFieldInt8(64, +t5TextEncoder, +true);
+}
+
+static addSeparateClipL(builder:flatbuffers.Builder, separateClipL:boolean) {
+  builder.addFieldInt8(65, +separateClipL, +false);
+}
+
+static addClipLText(builder:flatbuffers.Builder, clipLTextOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(66, clipLTextOffset, 0);
+}
+
+static addSeparateOpenClipG(builder:flatbuffers.Builder, separateOpenClipG:boolean) {
+  builder.addFieldInt8(67, +separateOpenClipG, +false);
+}
+
+static addOpenClipGText(builder:flatbuffers.Builder, openClipGTextOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(68, openClipGTextOffset, 0);
+}
+
+static addSpeedUpWithGuidanceEmbed(builder:flatbuffers.Builder, speedUpWithGuidanceEmbed:boolean) {
+  builder.addFieldInt8(69, +speedUpWithGuidanceEmbed, +true);
+}
+
+static addGuidanceEmbed(builder:flatbuffers.Builder, guidanceEmbed:number) {
+  builder.addFieldFloat32(70, guidanceEmbed, 3.5);
+}
+
+static addResolutionDependentShift(builder:flatbuffers.Builder, resolutionDependentShift:boolean) {
+  builder.addFieldInt8(71, +resolutionDependentShift, +true);
+}
+
+static addTeaCacheStart(builder:flatbuffers.Builder, teaCacheStart:number) {
+  builder.addFieldInt32(72, teaCacheStart, 5);
+}
+
+static addTeaCacheEnd(builder:flatbuffers.Builder, teaCacheEnd:number) {
+  builder.addFieldInt32(73, teaCacheEnd, -1);
+}
+
+static addTeaCacheThreshold(builder:flatbuffers.Builder, teaCacheThreshold:number) {
+  builder.addFieldFloat32(74, teaCacheThreshold, 0.06);
+}
+
+static addTeaCache(builder:flatbuffers.Builder, teaCache:boolean) {
+  builder.addFieldInt8(75, +teaCache, +false);
+}
+
+static addSeparateT5(builder:flatbuffers.Builder, separateT5:boolean) {
+  builder.addFieldInt8(76, +separateT5, +false);
+}
+
+static addT5Text(builder:flatbuffers.Builder, t5TextOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(77, t5TextOffset, 0);
+}
+
+static addTeaCacheMaxSkipSteps(builder:flatbuffers.Builder, teaCacheMaxSkipSteps:number) {
+  builder.addFieldInt32(78, teaCacheMaxSkipSteps, 3);
+}
+
+static endGenerationConfiguration(builder:flatbuffers.Builder):flatbuffers.Offset {
+  const offset = builder.endObject();
+  return offset;
+}
+
+static finishGenerationConfigurationBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
+  builder.finish(offset);
+}
+
+static finishSizePrefixedGenerationConfigurationBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
+  builder.finish(offset, undefined, true);
+}
+
+static createGenerationConfiguration(builder:flatbuffers.Builder, id:bigint, startWidth:number, startHeight:number, seed:number, steps:number, guidanceScale:number, strength:number, modelOffset:flatbuffers.Offset, sampler:SamplerType, batchCount:number, batchSize:number, hiresFix:boolean, hiresFixStartWidth:number, hiresFixStartHeight:number, hiresFixStrength:number, upscalerOffset:flatbuffers.Offset, imageGuidanceScale:number, seedMode:SeedMode, clipSkip:number, controlsOffset:flatbuffers.Offset, lorasOffset:flatbuffers.Offset, maskBlur:number, faceRestorationOffset:flatbuffers.Offset, clipWeight:number, negativePromptForImagePrior:boolean, imagePriorSteps:number, refinerModelOffset:flatbuffers.Offset, originalImageHeight:number, originalImageWidth:number, cropTop:number, cropLeft:number, targetImageHeight:number, targetImageWidth:number, aestheticScore:number, negativeAestheticScore:number, zeroNegativePrompt:boolean, refinerStart:number, negativeOriginalImageHeight:number, negativeOriginalImageWidth:number, nameOffset:flatbuffers.Offset, fpsId:number, motionBucketId:number, condAug:number, startFrameCfg:number, numFrames:number, maskBlurOutset:number, sharpness:number, shift:number, stage2Steps:number, stage2Cfg:number, stage2Shift:number, tiledDecoding:boolean, decodingTileWidth:number, decodingTileHeight:number, decodingTileOverlap:number, stochasticSamplingGamma:number, preserveOriginalAfterInpaint:boolean, tiledDiffusion:boolean, diffusionTileWidth:number, diffusionTileHeight:number, diffusionTileOverlap:number, upscalerScaleFactor:number, t5TextEncoder:boolean, separateClipL:boolean, clipLTextOffset:flatbuffers.Offset, separateOpenClipG:boolean, openClipGTextOffset:flatbuffers.Offset, speedUpWithGuidanceEmbed:boolean, guidanceEmbed:number, resolutionDependentShift:boolean, teaCacheStart:number, teaCacheEnd:number, teaCacheThreshold:number, teaCache:boolean, separateT5:boolean, t5TextOffset:flatbuffers.Offset, teaCacheMaxSkipSteps:number):flatbuffers.Offset {
+  GenerationConfiguration.startGenerationConfiguration(builder);
+  GenerationConfiguration.addId(builder, id);
+  GenerationConfiguration.addStartWidth(builder, startWidth);
+  GenerationConfiguration.addStartHeight(builder, startHeight);
+  GenerationConfiguration.addSeed(builder, seed);
+  GenerationConfiguration.addSteps(builder, steps);
+  GenerationConfiguration.addGuidanceScale(builder, guidanceScale);
+  GenerationConfiguration.addStrength(builder, strength);
+  GenerationConfiguration.addModel(builder, modelOffset);
+  GenerationConfiguration.addSampler(builder, sampler);
+  GenerationConfiguration.addBatchCount(builder, batchCount);
+  GenerationConfiguration.addBatchSize(builder, batchSize);
+  GenerationConfiguration.addHiresFix(builder, hiresFix);
+  GenerationConfiguration.addHiresFixStartWidth(builder, hiresFixStartWidth);
+  GenerationConfiguration.addHiresFixStartHeight(builder, hiresFixStartHeight);
+  GenerationConfiguration.addHiresFixStrength(builder, hiresFixStrength);
+  GenerationConfiguration.addUpscaler(builder, upscalerOffset);
+  GenerationConfiguration.addImageGuidanceScale(builder, imageGuidanceScale);
+  GenerationConfiguration.addSeedMode(builder, seedMode);
+  GenerationConfiguration.addClipSkip(builder, clipSkip);
+  GenerationConfiguration.addControls(builder, controlsOffset);
+  GenerationConfiguration.addLoras(builder, lorasOffset);
+  GenerationConfiguration.addMaskBlur(builder, maskBlur);
+  GenerationConfiguration.addFaceRestoration(builder, faceRestorationOffset);
+  GenerationConfiguration.addClipWeight(builder, clipWeight);
+  GenerationConfiguration.addNegativePromptForImagePrior(builder, negativePromptForImagePrior);
+  GenerationConfiguration.addImagePriorSteps(builder, imagePriorSteps);
+  GenerationConfiguration.addRefinerModel(builder, refinerModelOffset);
+  GenerationConfiguration.addOriginalImageHeight(builder, originalImageHeight);
+  GenerationConfiguration.addOriginalImageWidth(builder, originalImageWidth);
+  GenerationConfiguration.addCropTop(builder, cropTop);
+  GenerationConfiguration.addCropLeft(builder, cropLeft);
+  GenerationConfiguration.addTargetImageHeight(builder, targetImageHeight);
+  GenerationConfiguration.addTargetImageWidth(builder, targetImageWidth);
+  GenerationConfiguration.addAestheticScore(builder, aestheticScore);
+  GenerationConfiguration.addNegativeAestheticScore(builder, negativeAestheticScore);
+  GenerationConfiguration.addZeroNegativePrompt(builder, zeroNegativePrompt);
+  GenerationConfiguration.addRefinerStart(builder, refinerStart);
+  GenerationConfiguration.addNegativeOriginalImageHeight(builder, negativeOriginalImageHeight);
+  GenerationConfiguration.addNegativeOriginalImageWidth(builder, negativeOriginalImageWidth);
+  GenerationConfiguration.addName(builder, nameOffset);
+  GenerationConfiguration.addFpsId(builder, fpsId);
+  GenerationConfiguration.addMotionBucketId(builder, motionBucketId);
+  GenerationConfiguration.addCondAug(builder, condAug);
+  GenerationConfiguration.addStartFrameCfg(builder, startFrameCfg);
+  GenerationConfiguration.addNumFrames(builder, numFrames);
+  GenerationConfiguration.addMaskBlurOutset(builder, maskBlurOutset);
+  GenerationConfiguration.addSharpness(builder, sharpness);
+  GenerationConfiguration.addShift(builder, shift);
+  GenerationConfiguration.addStage2Steps(builder, stage2Steps);
+  GenerationConfiguration.addStage2Cfg(builder, stage2Cfg);
+  GenerationConfiguration.addStage2Shift(builder, stage2Shift);
+  GenerationConfiguration.addTiledDecoding(builder, tiledDecoding);
+  GenerationConfiguration.addDecodingTileWidth(builder, decodingTileWidth);
+  GenerationConfiguration.addDecodingTileHeight(builder, decodingTileHeight);
+  GenerationConfiguration.addDecodingTileOverlap(builder, decodingTileOverlap);
+  GenerationConfiguration.addStochasticSamplingGamma(builder, stochasticSamplingGamma);
+  GenerationConfiguration.addPreserveOriginalAfterInpaint(builder, preserveOriginalAfterInpaint);
+  GenerationConfiguration.addTiledDiffusion(builder, tiledDiffusion);
+  GenerationConfiguration.addDiffusionTileWidth(builder, diffusionTileWidth);
+  GenerationConfiguration.addDiffusionTileHeight(builder, diffusionTileHeight);
+  GenerationConfiguration.addDiffusionTileOverlap(builder, diffusionTileOverlap);
+  GenerationConfiguration.addUpscalerScaleFactor(builder, upscalerScaleFactor);
+  GenerationConfiguration.addT5TextEncoder(builder, t5TextEncoder);
+  GenerationConfiguration.addSeparateClipL(builder, separateClipL);
+  GenerationConfiguration.addClipLText(builder, clipLTextOffset);
+  GenerationConfiguration.addSeparateOpenClipG(builder, separateOpenClipG);
+  GenerationConfiguration.addOpenClipGText(builder, openClipGTextOffset);
+  GenerationConfiguration.addSpeedUpWithGuidanceEmbed(builder, speedUpWithGuidanceEmbed);
+  GenerationConfiguration.addGuidanceEmbed(builder, guidanceEmbed);
+  GenerationConfiguration.addResolutionDependentShift(builder, resolutionDependentShift);
+  GenerationConfiguration.addTeaCacheStart(builder, teaCacheStart);
+  GenerationConfiguration.addTeaCacheEnd(builder, teaCacheEnd);
+  GenerationConfiguration.addTeaCacheThreshold(builder, teaCacheThreshold);
+  GenerationConfiguration.addTeaCache(builder, teaCache);
+  GenerationConfiguration.addSeparateT5(builder, separateT5);
+  GenerationConfiguration.addT5Text(builder, t5TextOffset);
+  GenerationConfiguration.addTeaCacheMaxSkipSteps(builder, teaCacheMaxSkipSteps);
+  return GenerationConfiguration.endGenerationConfiguration(builder);
+}
+
+unpack(): GenerationConfigurationT {
+  return new GenerationConfigurationT(
+    this.id(),
+    this.startWidth(),
+    this.startHeight(),
+    this.seed(),
+    this.steps(),
+    this.guidanceScale(),
+    this.strength(),
+    this.model(),
+    this.sampler(),
+    this.batchCount(),
+    this.batchSize(),
+    this.hiresFix(),
+    this.hiresFixStartWidth(),
+    this.hiresFixStartHeight(),
+    this.hiresFixStrength(),
+    this.upscaler(),
+    this.imageGuidanceScale(),
+    this.seedMode(),
+    this.clipSkip(),
+    this.bb!.createObjList<Control, ControlT>(this.controls.bind(this), this.controlsLength()),
+    this.bb!.createObjList<LoRA, LoRAT>(this.loras.bind(this), this.lorasLength()),
+    this.maskBlur(),
+    this.faceRestoration(),
+    this.clipWeight(),
+    this.negativePromptForImagePrior(),
+    this.imagePriorSteps(),
+    this.refinerModel(),
+    this.originalImageHeight(),
+    this.originalImageWidth(),
+    this.cropTop(),
+    this.cropLeft(),
+    this.targetImageHeight(),
+    this.targetImageWidth(),
+    this.aestheticScore(),
+    this.negativeAestheticScore(),
+    this.zeroNegativePrompt(),
+    this.refinerStart(),
+    this.negativeOriginalImageHeight(),
+    this.negativeOriginalImageWidth(),
+    this.name(),
+    this.fpsId(),
+    this.motionBucketId(),
+    this.condAug(),
+    this.startFrameCfg(),
+    this.numFrames(),
+    this.maskBlurOutset(),
+    this.sharpness(),
+    this.shift(),
+    this.stage2Steps(),
+    this.stage2Cfg(),
+    this.stage2Shift(),
+    this.tiledDecoding(),
+    this.decodingTileWidth(),
+    this.decodingTileHeight(),
+    this.decodingTileOverlap(),
+    this.stochasticSamplingGamma(),
+    this.preserveOriginalAfterInpaint(),
+    this.tiledDiffusion(),
+    this.diffusionTileWidth(),
+    this.diffusionTileHeight(),
+    this.diffusionTileOverlap(),
+    this.upscalerScaleFactor(),
+    this.t5TextEncoder(),
+    this.separateClipL(),
+    this.clipLText(),
+    this.separateOpenClipG(),
+    this.openClipGText(),
+    this.speedUpWithGuidanceEmbed(),
+    this.guidanceEmbed(),
+    this.resolutionDependentShift(),
+    this.teaCacheStart(),
+    this.teaCacheEnd(),
+    this.teaCacheThreshold(),
+    this.teaCache(),
+    this.separateT5(),
+    this.t5Text(),
+    this.teaCacheMaxSkipSteps()
+  );
+}
+
+
+unpackTo(_o: GenerationConfigurationT): void {
+  _o.id = this.id();
+  _o.startWidth = this.startWidth();
+  _o.startHeight = this.startHeight();
+  _o.seed = this.seed();
+  _o.steps = this.steps();
+  _o.guidanceScale = this.guidanceScale();
+  _o.strength = this.strength();
+  _o.model = this.model();
+  _o.sampler = this.sampler();
+  _o.batchCount = this.batchCount();
+  _o.batchSize = this.batchSize();
+  _o.hiresFix = this.hiresFix();
+  _o.hiresFixStartWidth = this.hiresFixStartWidth();
+  _o.hiresFixStartHeight = this.hiresFixStartHeight();
+  _o.hiresFixStrength = this.hiresFixStrength();
+  _o.upscaler = this.upscaler();
+  _o.imageGuidanceScale = this.imageGuidanceScale();
+  _o.seedMode = this.seedMode();
+  _o.clipSkip = this.clipSkip();
+  _o.controls = this.bb!.createObjList<Control, ControlT>(this.controls.bind(this), this.controlsLength());
+  _o.loras = this.bb!.createObjList<LoRA, LoRAT>(this.loras.bind(this), this.lorasLength());
+  _o.maskBlur = this.maskBlur();
+  _o.faceRestoration = this.faceRestoration();
+  _o.clipWeight = this.clipWeight();
+  _o.negativePromptForImagePrior = this.negativePromptForImagePrior();
+  _o.imagePriorSteps = this.imagePriorSteps();
+  _o.refinerModel = this.refinerModel();
+  _o.originalImageHeight = this.originalImageHeight();
+  _o.originalImageWidth = this.originalImageWidth();
+  _o.cropTop = this.cropTop();
+  _o.cropLeft = this.cropLeft();
+  _o.targetImageHeight = this.targetImageHeight();
+  _o.targetImageWidth = this.targetImageWidth();
+  _o.aestheticScore = this.aestheticScore();
+  _o.negativeAestheticScore = this.negativeAestheticScore();
+  _o.zeroNegativePrompt = this.zeroNegativePrompt();
+  _o.refinerStart = this.refinerStart();
+  _o.negativeOriginalImageHeight = this.negativeOriginalImageHeight();
+  _o.negativeOriginalImageWidth = this.negativeOriginalImageWidth();
+  _o.name = this.name();
+  _o.fpsId = this.fpsId();
+  _o.motionBucketId = this.motionBucketId();
+  _o.condAug = this.condAug();
+  _o.startFrameCfg = this.startFrameCfg();
+  _o.numFrames = this.numFrames();
+  _o.maskBlurOutset = this.maskBlurOutset();
+  _o.sharpness = this.sharpness();
+  _o.shift = this.shift();
+  _o.stage2Steps = this.stage2Steps();
+  _o.stage2Cfg = this.stage2Cfg();
+  _o.stage2Shift = this.stage2Shift();
+  _o.tiledDecoding = this.tiledDecoding();
+  _o.decodingTileWidth = this.decodingTileWidth();
+  _o.decodingTileHeight = this.decodingTileHeight();
+  _o.decodingTileOverlap = this.decodingTileOverlap();
+  _o.stochasticSamplingGamma = this.stochasticSamplingGamma();
+  _o.preserveOriginalAfterInpaint = this.preserveOriginalAfterInpaint();
+  _o.tiledDiffusion = this.tiledDiffusion();
+  _o.diffusionTileWidth = this.diffusionTileWidth();
+  _o.diffusionTileHeight = this.diffusionTileHeight();
+  _o.diffusionTileOverlap = this.diffusionTileOverlap();
+  _o.upscalerScaleFactor = this.upscalerScaleFactor();
+  _o.t5TextEncoder = this.t5TextEncoder();
+  _o.separateClipL = this.separateClipL();
+  _o.clipLText = this.clipLText();
+  _o.separateOpenClipG = this.separateOpenClipG();
+  _o.openClipGText = this.openClipGText();
+  _o.speedUpWithGuidanceEmbed = this.speedUpWithGuidanceEmbed();
+  _o.guidanceEmbed = this.guidanceEmbed();
+  _o.resolutionDependentShift = this.resolutionDependentShift();
+  _o.teaCacheStart = this.teaCacheStart();
+  _o.teaCacheEnd = this.teaCacheEnd();
+  _o.teaCacheThreshold = this.teaCacheThreshold();
+  _o.teaCache = this.teaCache();
+  _o.separateT5 = this.separateT5();
+  _o.t5Text = this.t5Text();
+  _o.teaCacheMaxSkipSteps = this.teaCacheMaxSkipSteps();
+}
 }
 
 export class GenerationConfigurationT implements flatbuffers.IGeneratedObject {
-  constructor(
-    public id: bigint = BigInt('0'),
-    public startWidth: number = 0,
-    public startHeight: number = 0,
-    public seed: number = 0,
-    public steps: number = 0,
-    public guidanceScale: number = 0.0,
-    public strength: number = 0.0,
-    public model: string | Uint8Array | null = null,
-    public sampler: SamplerType = SamplerType.DPMPP2MKarras,
-    public batchCount: number = 1,
-    public batchSize: number = 1,
-    public hiresFix: boolean = false,
-    public hiresFixStartWidth: number = 0,
-    public hiresFixStartHeight: number = 0,
-    public hiresFixStrength: number = 0.7,
-    public upscaler: string | Uint8Array | null = null,
-    public imageGuidanceScale: number = 1.5,
-    public seedMode: SeedMode = SeedMode.Legacy,
-    public clipSkip: number = 1,
-    public controls: ControlT[] = [],
-    public loras: LoRAT[] = [],
-    public maskBlur: number = 0.0,
-    public faceRestoration: string | Uint8Array | null = null,
-    public clipWeight: number = 1.0,
-    public negativePromptForImagePrior: boolean = true,
-    public imagePriorSteps: number = 5,
-    public refinerModel: string | Uint8Array | null = null,
-    public originalImageHeight: number = 0,
-    public originalImageWidth: number = 0,
-    public cropTop: number = 0,
-    public cropLeft: number = 0,
-    public targetImageHeight: number = 0,
-    public targetImageWidth: number = 0,
-    public aestheticScore: number = 6.0,
-    public negativeAestheticScore: number = 2.5,
-    public zeroNegativePrompt: boolean = false,
-    public refinerStart: number = 0.7,
-    public negativeOriginalImageHeight: number = 0,
-    public negativeOriginalImageWidth: number = 0,
-    public name: string | Uint8Array | null = null,
-    public fpsId: number = 5,
-    public motionBucketId: number = 127,
-    public condAug: number = 0.02,
-    public startFrameCfg: number = 1.0,
-    public numFrames: number = 14,
-    public maskBlurOutset: number = 0,
-    public sharpness: number = 0.0,
-    public shift: number = 1.0,
-    public stage2Steps: number = 10,
-    public stage2Cfg: number = 1.0,
-    public stage2Shift: number = 1.0,
-    public tiledDecoding: boolean = false,
-    public decodingTileWidth: number = 10,
-    public decodingTileHeight: number = 10,
-    public decodingTileOverlap: number = 2,
-    public stochasticSamplingGamma: number = 0.3,
-    public preserveOriginalAfterInpaint: boolean = true,
-    public tiledDiffusion: boolean = false,
-    public diffusionTileWidth: number = 16,
-    public diffusionTileHeight: number = 16,
-    public diffusionTileOverlap: number = 2,
-    public upscalerScaleFactor: number = 0,
-    public t5TextEncoder: boolean = true,
-    public separateClipL: boolean = false,
-    public clipLText: string | Uint8Array | null = null,
-    public separateOpenClipG: boolean = false,
-    public openClipGText: string | Uint8Array | null = null,
-    public speedUpWithGuidanceEmbed: boolean = true,
-    public guidanceEmbed: number = 3.5,
-    public resolutionDependentShift: boolean = true
-  ) {}
+constructor(
+  public id: bigint = BigInt('0'),
+  public startWidth: number = 0,
+  public startHeight: number = 0,
+  public seed: number = 0,
+  public steps: number = 0,
+  public guidanceScale: number = 0.0,
+  public strength: number = 0.0,
+  public model: string|Uint8Array|null = null,
+  public sampler: SamplerType = SamplerType.DPMPP2MKarras,
+  public batchCount: number = 1,
+  public batchSize: number = 1,
+  public hiresFix: boolean = false,
+  public hiresFixStartWidth: number = 0,
+  public hiresFixStartHeight: number = 0,
+  public hiresFixStrength: number = 0.7,
+  public upscaler: string|Uint8Array|null = null,
+  public imageGuidanceScale: number = 1.5,
+  public seedMode: SeedMode = SeedMode.Legacy,
+  public clipSkip: number = 1,
+  public controls: (ControlT)[] = [],
+  public loras: (LoRAT)[] = [],
+  public maskBlur: number = 0.0,
+  public faceRestoration: string|Uint8Array|null = null,
+  public clipWeight: number = 1.0,
+  public negativePromptForImagePrior: boolean = true,
+  public imagePriorSteps: number = 5,
+  public refinerModel: string|Uint8Array|null = null,
+  public originalImageHeight: number = 0,
+  public originalImageWidth: number = 0,
+  public cropTop: number = 0,
+  public cropLeft: number = 0,
+  public targetImageHeight: number = 0,
+  public targetImageWidth: number = 0,
+  public aestheticScore: number = 6.0,
+  public negativeAestheticScore: number = 2.5,
+  public zeroNegativePrompt: boolean = false,
+  public refinerStart: number = 0.7,
+  public negativeOriginalImageHeight: number = 0,
+  public negativeOriginalImageWidth: number = 0,
+  public name: string|Uint8Array|null = null,
+  public fpsId: number = 5,
+  public motionBucketId: number = 127,
+  public condAug: number = 0.02,
+  public startFrameCfg: number = 1.0,
+  public numFrames: number = 14,
+  public maskBlurOutset: number = 0,
+  public sharpness: number = 0.0,
+  public shift: number = 1.0,
+  public stage2Steps: number = 10,
+  public stage2Cfg: number = 1.0,
+  public stage2Shift: number = 1.0,
+  public tiledDecoding: boolean = false,
+  public decodingTileWidth: number = 10,
+  public decodingTileHeight: number = 10,
+  public decodingTileOverlap: number = 2,
+  public stochasticSamplingGamma: number = 0.3,
+  public preserveOriginalAfterInpaint: boolean = true,
+  public tiledDiffusion: boolean = false,
+  public diffusionTileWidth: number = 16,
+  public diffusionTileHeight: number = 16,
+  public diffusionTileOverlap: number = 2,
+  public upscalerScaleFactor: number = 0,
+  public t5TextEncoder: boolean = true,
+  public separateClipL: boolean = false,
+  public clipLText: string|Uint8Array|null = null,
+  public separateOpenClipG: boolean = false,
+  public openClipGText: string|Uint8Array|null = null,
+  public speedUpWithGuidanceEmbed: boolean = true,
+  public guidanceEmbed: number = 3.5,
+  public resolutionDependentShift: boolean = true,
+  public teaCacheStart: number = 5,
+  public teaCacheEnd: number = -1,
+  public teaCacheThreshold: number = 0.06,
+  public teaCache: boolean = false,
+  public separateT5: boolean = false,
+  public t5Text: string|Uint8Array|null = null,
+  public teaCacheMaxSkipSteps: number = 3
+){}
 
-  pack(builder: flatbuffers.Builder): flatbuffers.Offset {
-    const model = this.model !== null ? builder.createString(this.model!) : 0
-    const upscaler = this.upscaler !== null ? builder.createString(this.upscaler!) : 0
-    const controls = GenerationConfiguration.createControlsVector(
-      builder,
-      builder.createObjectOffsetList(this.controls)
-    )
-    const loras = GenerationConfiguration.createLorasVector(
-      builder,
-      builder.createObjectOffsetList(this.loras)
-    )
-    const faceRestoration =
-      this.faceRestoration !== null ? builder.createString(this.faceRestoration!) : 0
-    const refinerModel = this.refinerModel !== null ? builder.createString(this.refinerModel!) : 0
-    const name = this.name !== null ? builder.createString(this.name!) : 0
-    const clipLText = this.clipLText !== null ? builder.createString(this.clipLText!) : 0
-    const openClipGText =
-      this.openClipGText !== null ? builder.createString(this.openClipGText!) : 0
 
-    return GenerationConfiguration.createGenerationConfiguration(
-      builder,
-      this.id,
-      this.startWidth,
-      this.startHeight,
-      this.seed,
-      this.steps,
-      this.guidanceScale,
-      this.strength,
-      model,
-      this.sampler,
-      this.batchCount,
-      this.batchSize,
-      this.hiresFix,
-      this.hiresFixStartWidth,
-      this.hiresFixStartHeight,
-      this.hiresFixStrength,
-      upscaler,
-      this.imageGuidanceScale,
-      this.seedMode,
-      this.clipSkip,
-      controls,
-      loras,
-      this.maskBlur,
-      faceRestoration,
-      this.clipWeight,
-      this.negativePromptForImagePrior,
-      this.imagePriorSteps,
-      refinerModel,
-      this.originalImageHeight,
-      this.originalImageWidth,
-      this.cropTop,
-      this.cropLeft,
-      this.targetImageHeight,
-      this.targetImageWidth,
-      this.aestheticScore,
-      this.negativeAestheticScore,
-      this.zeroNegativePrompt,
-      this.refinerStart,
-      this.negativeOriginalImageHeight,
-      this.negativeOriginalImageWidth,
-      name,
-      this.fpsId,
-      this.motionBucketId,
-      this.condAug,
-      this.startFrameCfg,
-      this.numFrames,
-      this.maskBlurOutset,
-      this.sharpness,
-      this.shift,
-      this.stage2Steps,
-      this.stage2Cfg,
-      this.stage2Shift,
-      this.tiledDecoding,
-      this.decodingTileWidth,
-      this.decodingTileHeight,
-      this.decodingTileOverlap,
-      this.stochasticSamplingGamma,
-      this.preserveOriginalAfterInpaint,
-      this.tiledDiffusion,
-      this.diffusionTileWidth,
-      this.diffusionTileHeight,
-      this.diffusionTileOverlap,
-      this.upscalerScaleFactor,
-      this.t5TextEncoder,
-      this.separateClipL,
-      clipLText,
-      this.separateOpenClipG,
-      openClipGText,
-      this.speedUpWithGuidanceEmbed,
-      this.guidanceEmbed,
-      this.resolutionDependentShift
-    )
-  }
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const model = (this.model !== null ? builder.createString(this.model!) : 0);
+  const upscaler = (this.upscaler !== null ? builder.createString(this.upscaler!) : 0);
+  const controls = GenerationConfiguration.createControlsVector(builder, builder.createObjectOffsetList(this.controls));
+  const loras = GenerationConfiguration.createLorasVector(builder, builder.createObjectOffsetList(this.loras));
+  const faceRestoration = (this.faceRestoration !== null ? builder.createString(this.faceRestoration!) : 0);
+  const refinerModel = (this.refinerModel !== null ? builder.createString(this.refinerModel!) : 0);
+  const name = (this.name !== null ? builder.createString(this.name!) : 0);
+  const clipLText = (this.clipLText !== null ? builder.createString(this.clipLText!) : 0);
+  const openClipGText = (this.openClipGText !== null ? builder.createString(this.openClipGText!) : 0);
+  const t5Text = (this.t5Text !== null ? builder.createString(this.t5Text!) : 0);
+
+  return GenerationConfiguration.createGenerationConfiguration(builder,
+    this.id,
+    this.startWidth,
+    this.startHeight,
+    this.seed,
+    this.steps,
+    this.guidanceScale,
+    this.strength,
+    model,
+    this.sampler,
+    this.batchCount,
+    this.batchSize,
+    this.hiresFix,
+    this.hiresFixStartWidth,
+    this.hiresFixStartHeight,
+    this.hiresFixStrength,
+    upscaler,
+    this.imageGuidanceScale,
+    this.seedMode,
+    this.clipSkip,
+    controls,
+    loras,
+    this.maskBlur,
+    faceRestoration,
+    this.clipWeight,
+    this.negativePromptForImagePrior,
+    this.imagePriorSteps,
+    refinerModel,
+    this.originalImageHeight,
+    this.originalImageWidth,
+    this.cropTop,
+    this.cropLeft,
+    this.targetImageHeight,
+    this.targetImageWidth,
+    this.aestheticScore,
+    this.negativeAestheticScore,
+    this.zeroNegativePrompt,
+    this.refinerStart,
+    this.negativeOriginalImageHeight,
+    this.negativeOriginalImageWidth,
+    name,
+    this.fpsId,
+    this.motionBucketId,
+    this.condAug,
+    this.startFrameCfg,
+    this.numFrames,
+    this.maskBlurOutset,
+    this.sharpness,
+    this.shift,
+    this.stage2Steps,
+    this.stage2Cfg,
+    this.stage2Shift,
+    this.tiledDecoding,
+    this.decodingTileWidth,
+    this.decodingTileHeight,
+    this.decodingTileOverlap,
+    this.stochasticSamplingGamma,
+    this.preserveOriginalAfterInpaint,
+    this.tiledDiffusion,
+    this.diffusionTileWidth,
+    this.diffusionTileHeight,
+    this.diffusionTileOverlap,
+    this.upscalerScaleFactor,
+    this.t5TextEncoder,
+    this.separateClipL,
+    clipLText,
+    this.separateOpenClipG,
+    openClipGText,
+    this.speedUpWithGuidanceEmbed,
+    this.guidanceEmbed,
+    this.resolutionDependentShift,
+    this.teaCacheStart,
+    this.teaCacheEnd,
+    this.teaCacheThreshold,
+    this.teaCache,
+    this.separateT5,
+    t5Text,
+    this.teaCacheMaxSkipSteps
+  );
+}
 }

@@ -11,7 +11,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
-    "test:watch": "vitest --watch --ui"
+    "test:watch": "vitest --watch --ui",
+    "gen-code": "node scripts/genCode.mjs"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.2",
@@ -23,8 +24,10 @@
     "sharp": "^0.33.5"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.13.14",
     "@vitest/ui": "^3.1.1",
+    "fs-extra": "^11.3.0",
     "tsup": "^8.4.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",

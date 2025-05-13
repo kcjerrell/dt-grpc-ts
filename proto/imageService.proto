@@ -114,6 +114,7 @@ message ImageGenerationResponse {
   optional bytes previewImage = 4;      // preview generating image data as bytes.
   optional int32 scaleFactor = 5; // The scale factor of the image.
   repeated string tags = 6; // Tags to track which server responded to the generation request.
+  optional int64 downloadSize = 7; // The size of final image will be sent in the next payload.
 }
 
 message FileChunk {
