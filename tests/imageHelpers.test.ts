@@ -9,7 +9,7 @@ describe('convertImageToMask', () => {
 
     let text = mask.slice(68).join('')
 
-    expect(text).toBe('02222221022222210222222102222221')
+    expect(text).toBe('00002222000022220000222200002222')
   })
 
   test('converts 4 chanel image to mask', () => {
@@ -18,7 +18,7 @@ describe('convertImageToMask', () => {
 
     let text = mask.slice(68).join('')
 
-    expect(text).toBe('02222221022222210222222102222221')
+    expect(text).toBe('00002222000022220000222200002222')
   })
 
   test('creates the correct header', () => {
@@ -65,15 +65,15 @@ describe('convertImageToMask', () => {
   })
 
   test('throws an error if image is null, undefined, or not the correct type', () => {
-    expect(() => convertImageToMask(null)).toThrow(Error)
-    expect(() => convertImageToMask(undefined)).toThrow(Error)
+    expect(() => convertImageToMask(null as any)).toThrow(Error)
+    expect(() => convertImageToMask(undefined as any)).toThrow(Error)
     expect(() => convertImageToMask({} as any)).toThrow(Error)
   })
 })
 
 /** generates an image buffer where x=0 is full black and x=width = full white */
-function getGradientMask(width, height, channels) {
-  const maskImage = new ImageBuffer(8, 4, 3)
+function getGradientMask(width: number, height: number, channels: 1 | 2 | 3 | 4) {
+  const maskImage = new ImageBuffer(width, height, channels)
 
   for (let y = 0; y < maskImage.height; y++) {
     for (let x = 0; x < maskImage.width; x++) {

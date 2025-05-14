@@ -102,7 +102,7 @@ function float16ToUint8(f16: number) {
   return (f16 + 1) * 127
 }
 
-export function convertImageToMask(image: BufferWithInfo): Uint8Array {
+export function convertImageToMask(image: BufferWithInfo, threshold = 127): Uint8Array {
   if (
     !image ||
     image.width === undefined ||
@@ -126,7 +126,7 @@ export function convertImageToMask(image: BufferWithInfo): Uint8Array {
     return value //* (alpha / 255)
   }
   const mapValue = (v: number) => {
-    return v < 127 ? 0 : 2
+    return v < threshold ? 0 : 2
   }
 
   // valid values for mask: 0-7
@@ -135,10 +135,7 @@ export function convertImageToMask(image: BufferWithInfo): Uint8Array {
   // 2 = config strength
   // 3-8 (presumably) alpha 0-255?
 
-  // for simplicity, the mapping will be:
-  // black #000000 = 0 (retain original)
-  // white #FFFFFF = 1 (replace at 100% strength)
-  // in between = 2 (replace at config.strength)
+  // values > threshold  = 2, else 0
   for (let y = 0; y < image.height!; y += 1) {
     for (let x = 0; x < image.width!; x += 1) {
       const addrIn = (y * image.width! + x) * image.channels!
