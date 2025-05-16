@@ -1,12 +1,10 @@
-import { getClient, buildRequest } from '..'
-import { saveResult } from './helpers'
+import { buildRequest, DTService } from '..'
 
 export async function txt2imgExample() {
-  const client = getClient('localhost:7859')
-  await client.waitForReady()
+  const dtc = new DTService('localhost:7859')
 
   // any missing values in the config will be replaced with defaults
-  const request = await buildRequest(
+  const request = buildRequest(
     {
       model: 'sd_v1.5_f16.ckpt',
       steps: 20,
@@ -15,11 +13,10 @@ export async function txt2imgExample() {
     },
     'beautiful sunset',
     'boring, blurry, watermark'
-  ).build()
+  )
 
-  const result = await client.generateImage(request)
-
-  await saveResult(result, 'examples_txt2img_output')
+  const result = await dtc.generateImage(request)
+  await result[0].toFile('examples_txt2img_output1.png')
 }
 
 if (require.main === module) {

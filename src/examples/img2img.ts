@@ -1,10 +1,9 @@
-import { getClient, buildRequest } from '..'
-import { saveResult } from './helpers'
+import { buildRequest, DTService } from '..'
 
 export async function img2imgExample() {
-  const client = getClient('localhost:7859')
+  const dtc = new DTService('localhost:7859')
 
-  const request = await buildRequest(
+  const request = buildRequest(
     {
       model: 'sd_v1.5_f16.ckpt',
       steps: 20,
@@ -13,11 +12,11 @@ export async function img2imgExample() {
     },
     'adorable big brown dog',
     'boring, blurry, watermark'
-  ).build()
+  )
 
-  const result = await client.generateImage(request)
+  const [image] = await dtc.generateImage(request)
 
-  const image = await saveResult(result, 'examples_img2img_output1')
+  await image.toFile('examples_img2img_output1.png')
 
   const request2 = await buildRequest(
     {
@@ -30,12 +29,12 @@ export async function img2imgExample() {
     'bear',
     'boring, blurry, watermark'
   )
-    .addImage(image[0])
+    .addImage(image)
     .build()
 
-  const result2 = await client.generateImage(request2)
+  const [image2] = await dtc.generateImage(request2)
 
-  await saveResult(result2, 'examples_img2img_output2')
+  await image2.toFile('examples_img2img_output2.png')
 }
 
 if (require.main === module) {

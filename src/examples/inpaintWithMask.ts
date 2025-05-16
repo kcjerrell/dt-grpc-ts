@@ -1,12 +1,11 @@
-import { ControlInputType, ControlMode, getClient, ImageBuffer, buildRequest } from '..'
-import { saveResult } from './helpers'
+import { ControlInputType, ControlMode, ImageBuffer, buildRequest, DTService } from '..'
 
 export async function inpaintWithMaskExample() {
-  const client = getClient('localhost:7859')
+  const dtc = new DTService('localhost:7859')
 
   const model = 'sd_v1.5_f16.ckpt'
 
-  const request = await buildRequest(
+  const request = buildRequest(
     {
       model,
       steps: 20,
@@ -15,17 +14,17 @@ export async function inpaintWithMaskExample() {
     },
     'beautiful, lush, green forest',
     'boring, blurry, watermark'
-  ).build()
+  )
 
-  const result = await client.generateImage(request)
+  const [image] = await dtc.generateImage(request)
 
-  const [image] = await saveResult(result, 'examples_inpaint_output1')
+  await image.toFile('examples_inpaint_output1.png')
 
   // masks one side of the image
   const mask = getMask(image.width, image.height)
   await mask.toFile('examples_inpaint_mask.png')
 
-  const request2 = await buildRequest(
+  const request2 = buildRequest(
     {
       model,
       steps: 20,
@@ -53,11 +52,10 @@ export async function inpaintWithMaskExample() {
   )
     .addImage(image)
     .addMask(mask)
-    .build()
 
-  const result2 = await client.generateImage(request2)
+  const [image2] = await dtc.generateImage(request2)
 
-  await saveResult(result2, 'examples_inpaint_output2')
+  image2.toFile('examples_inpaint_output2.png')
 }
 
 function getMask(width: number, height: number) {

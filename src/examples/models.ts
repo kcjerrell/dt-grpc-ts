@@ -1,7 +1,7 @@
-import { getClient } from '..'
+import { getService } from '..'
 
 async function modelsExample() {
-  const client = getClient('localhost:7859')
+  const client = getService('localhost:7859')
 
   const response = await client.echo()
 

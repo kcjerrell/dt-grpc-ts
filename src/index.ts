@@ -1,4 +1,4 @@
-export { getClient } from './clientHelpers'
+export { getService, DTService } from './dtService'
 
 export { buildHints, type HintType } from './hintsBuilder'
 

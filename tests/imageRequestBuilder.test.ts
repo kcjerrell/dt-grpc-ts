@@ -1,5 +1,5 @@
 import { describe, test, expect, it } from 'vitest'
-import { getClient } from '../src/clientHelpers'
+import { getService } from '../src/dtService'
 import { buildRequest } from '../src/imageRequestBuilder'
 import { ImageBuffer } from '../src'
 
@@ -7,7 +7,7 @@ const getEmptyImage = (width = 512, height = 512, channels = 3) =>
   new ImageBuffer(width, height, channels as 1 | 3 | 4)
 
 describe('img2img', () => {
-  const client = getClient('localhost:7859')
+  const client = getService('localhost:7859')
 
   it('rounds sizes to nearest multiple of 64, minimum 64', async (ctx) => {
     const request = await buildRequest({

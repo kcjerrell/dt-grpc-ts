@@ -1,4 +1,4 @@
-import { GenerateImageOptions } from './clientHelpers'
+import { ImageRequest } from './dtService'
 import { getBaseConfig } from './config'
 import { buildHints, HintType } from './hintsBuilder'
 import { BufferWithInfo, ImageBuffer, resize } from './imageBuffer'
@@ -6,6 +6,8 @@ import { convertImageToMask } from './imageHelpers'
 import { encodeOverride, Override } from './override'
 import { Config } from './types'
 import { sha256 } from './util'
+
+const imageRequestBuilderSymbol = Symbol.for('dt-grpc-ts.imageRequestBuilder')
 
 /**
  * Construct a request to generate an image from a prompt.
@@ -25,7 +27,7 @@ export function buildRequest(
   prompt: string = '',
   negativePrompt: string = ''
 ): RequestBuilder<false, false> {
-  const request = {} as GenerateImageOptions
+  const request = {} as ImageRequest
 
   request.config = checkConfig({ ...getBaseConfig(), ...config })
   request.prompt = prompt
@@ -43,6 +45,7 @@ export function buildRequest(
   } = { hints: [] }
 
   return {
+    [imageRequestBuilderSymbol]: true,
     addImage(image: BufferWithInfo) {
       inputs.image = new ImageBuffer(image)
       return this
@@ -98,7 +101,7 @@ export function buildRequest(
           const resized = await resize(hint.image, width, height)
 
           if (hint.hintType === 'depth') {
-            const singleChannel = await resized.sharp((s) => s.grayscale().extractChannel(0))
+            const singleChannel = await resized.sharp(s => s.grayscale().extractChannel(0))
             hb.addHintImage('depth', await singleChannel.toDTTensor(), hint.weight)
             continue
           }
@@ -118,10 +121,10 @@ export function buildRequest(
 
       return request
     },
-  }
+  } as RequestBuilder<false, false>
 }
 
-type RequestBuilder<Image extends boolean = false, Mask extends boolean = false> = {
+export type RequestBuilder<Image extends boolean = true, Mask extends boolean = true> = {
   /**
    * Adds a control hint image to the request, for use with controlnets
    * Images will be resized to match the config if necessary
@@ -143,7 +146,7 @@ type RequestBuilder<Image extends boolean = false, Mask extends boolean = false>
    *
    * @returns The built request.
    */
-  build(): Promise<GenerateImageOptions>
+  build(): Promise<ImageRequest>
 } & (Mask extends true
   ? {}
   : {
@@ -166,6 +169,15 @@ type RequestBuilder<Image extends boolean = false, Mask extends boolean = false>
          */
         addImage(image: BufferWithInfo): RequestBuilder<true, Mask>
       })
+
+export function isRequestBuilder(input: unknown): input is RequestBuilder {
+  return (
+    typeof input === 'object' &&
+    input !== null &&
+    imageRequestBuilderSymbol in input &&
+    input[imageRequestBuilderSymbol] === true
+  )
+}
 
 function checkConfig(config: Partial<Config>) {
   const sizeKeys = [
