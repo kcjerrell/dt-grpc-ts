@@ -11,9 +11,9 @@ const decoders: {
   ) => [number, number, number];
 } = {};
 
-decoders['.v1'] =
-  decoders['.v2'] =
-  decoders['.svdI2v'] =
+decoders['v1'] =
+  decoders['v2'] =
+  decoders['svdI2v'] =
     (v0, v1, v2, v3) => {
       const r = 49.521 * v0 + 29.0283 * v1 - 23.9673 * v2 - 39.4981 * v3 + 99.9368
       const g = 41.1373 * v0 + 42.4951 * v1 + 24.7349 * v2 - 50.8279 * v3 + 99.8421

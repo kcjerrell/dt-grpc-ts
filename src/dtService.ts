@@ -1,27 +1,30 @@
-import { ChannelCredentials, credentials, Deadline } from '@grpc/grpc-js'
+import { ChannelCredentials } from '@grpc/grpc-js'
 import cliProgress from 'cli-progress'
 import { hostname } from 'os'
 import { buildConfig, buildConfigBuffer } from './config'
+import { getCredentials } from './cred'
 import {
   DeviceType,
   EchoReply,
   EchoRequest,
   ImageGenerationRequest,
   ImageGenerationResponse,
-  ImageGenerationServiceClient,
-  ImageGenerationSignpostProto,
+  ImageGenerationServiceClient
 } from './generated/grpc/imageService'
-import { decodeOverride, Override } from './override'
+import { ImageBuffer } from './imageBuffer'
+import { isRequestBuilder, RequestBuilder } from './imageRequestBuilder'
+import { decodeOverride, EmptyOverride, Override } from './override'
+import { decodePreview } from './previews'
 import { Config, Hints } from './types'
 import { sha256 } from './util'
-import { isRequestBuilder, RequestBuilder } from './imageRequestBuilder'
-import { ImageBuffer } from './imageBuffer'
+
+const cred = getCredentials()
 
 let id = 0
 
 export type UpdateData = {
   signpost: ReturnType<ImageGenerationResponse['toObject']>['currentSignpost']
-  preview: ImageBuffer[]
+  preview?: ImageBuffer
 }
 
 export type GenerateImageOptions<T extends 'tensor' | 'imagebuffer' = 'imagebuffer'> = {
@@ -59,6 +62,7 @@ export class DTService {
   client: ImageGenerationServiceClient
   defaultTimeout: number = 10000
   retries: number = 3
+  models: Override = EmptyOverride
 
   constructor(address: string, opts?: { defaultTimeout?: number; credentials?: ChannelCredentials })
   constructor(client: ImageGenerationServiceClient)
@@ -81,14 +85,10 @@ export class DTService {
     if (arg1 instanceof ImageGenerationServiceClient) {
       this.client = arg1
     } else if (typeof arg1 === 'string') {
-      this.client = new ImageGenerationServiceClient(
-        arg1,
-        arg2?.credentials ?? credentials.createInsecure(),
-        {
-          'grpc.max_receive_message_length': Infinity,
-          'grpc.max_send_message_length': Infinity,
-        }
-      )
+      this.client = new ImageGenerationServiceClient(arg1, arg2?.credentials ?? cred, {
+        'grpc.max_receive_message_length': Infinity,
+        'grpc.max_send_message_length': Infinity,
+      })
 
       if (arg2?.defaultTimeout) this.defaultTimeout = arg2.defaultTimeout
       if (arg2?.retries) this.retries = arg2.retries
@@ -109,8 +109,8 @@ export class DTService {
         if (err) reject(err)
 
         const data = res?.toObject()
-
         const override = decodeOverride(data?.override)
+        this.models = override
 
         resolve({ ...data, override }!)
       })
@@ -126,6 +126,12 @@ export class DTService {
 
     const config = buildConfig({ id: id++, ...req.config })
     const configBuffer = buildConfigBuffer(config)
+
+    if (this.models.models.length === 0) {
+      await this.echo()
+    }
+
+    const modelVersion = this.models.models.find(m => m.file === config.model || m.name === config.model)?.version
 
     const message = ImageGenerationRequest.fromObject({
       scaleFactor: 1,
@@ -146,6 +152,8 @@ export class DTService {
     const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
     bar1.start(config.steps ?? 1, 0)
 
+    const responseImages: Uint8Array[] = []
+
     return new Promise<Uint8Array[] | ImageBuffer[]>((resolve, reject) => {
       const grpcRequest = this.client
         .GenerateImage(message)
@@ -158,12 +166,10 @@ export class DTService {
           if (signpost?.sampling?.step) bar1.update(signpost.sampling.step)
 
           if (res.generatedImages?.length) {
-            bar1.stop()
-            if (outputFormat === 'tensor') resolve(e.generatedImages.map(im => Uint8Array.from(im)))
-            else resolve(e.generatedImages.map(im => ImageBuffer.fromDTTensor(Uint8Array.from(im))))
+            responseImages.push(...res.generatedImages)
           } else if (onUpdate && signpost) {
             const preview = res.previewImage?.byteLength
-              ? Uint8Array.from(res.previewImage)
+              ? new ImageBuffer(decodePreview(Uint8Array.from(res.previewImage), modelVersion))
               : undefined
             onUpdate({ signpost, preview })
           }
@@ -179,11 +185,15 @@ export class DTService {
           reject(e)
         })
 
-      // metadata
-      // .on('metadata', (e: ImageGenerationResponse) => console.debug('metadata', e))
+        // metadata
+        // .on('metadata', (e: ImageGenerationResponse) => console.debug('metadata', e))
 
-      // close
-      // .on('close', (e: ImageGenerationRequest) => console.debug('close', e))
+        // close
+        .on('close', (e: ImageGenerationRequest) => {
+          bar1.stop()
+          if (outputFormat === 'tensor') resolve(responseImages.map(im => Uint8Array.from(im)))
+          else resolve(responseImages.map(im => ImageBuffer.fromDTTensor(Uint8Array.from(im))))
+        })
 
       // end
       // .on('end', (e: ImageGenerationRequest) => console.debug('end', e))
@@ -209,8 +219,9 @@ export class DTService {
           })
         })
         return
-      } catch (e: { message?: string }) {
-        console.error(e?.message ?? e)
+      } catch (e: unknown) {
+        if (typeof e === 'object' && e !== null && 'message' in e) console.error(e?.message)
+        else console.error(e)
         if (i === this.retries - 1) throw e
       }
     }

@@ -1,6 +1,6 @@
-import { EchoReply } from './generated/grpc/imageService';
+import { EchoReply } from './generated/grpc/imageService'
 
-const emptyArray = encode([]);
+const emptyArray = encode([])
 
 export function getOverride() {
   return {
@@ -18,30 +18,26 @@ export function getOverride() {
     upscalers: emptyArray,
     controlNets: emptyArray,
     textualInversions: emptyArray,
-  };
+  }
 }
 
-export function decodeOverride(
-  override?: ReturnType<EchoReply['toObject']>['override']
-) {
+export function decodeOverride(override?: ReturnType<EchoReply['toObject']>['override']) {
   const decode = (buffer?: Uint8Array) => {
-    if (!buffer || buffer.length === 0) return [];
-    const decoder = new TextDecoder('utf-8');
-    const str = decoder.decode(buffer);
-    return JSON.parse(str);
-  };
+    if (!buffer || buffer.length === 0) return []
+    const decoder = new TextDecoder('utf-8')
+    const str = decoder.decode(buffer)
+    return JSON.parse(str)
+  }
 
   const decoded = {
     controlNets: decode(override?.controlNets) as ControlNet[],
     loras: decode(override?.loras) as Lora[],
     models: decode(override?.models) as Model[],
-    textualInversions: decode(
-      override?.textualInversions
-    ) as TextualInversion[],
+    textualInversions: decode(override?.textualInversions) as TextualInversion[],
     upscalers: decode(override?.upscalers),
-  };
+  }
 
-  return decoded as Override;
+  return decoded as Override
 }
 
 export function encodeOverride(override: Partial<Override>) {
@@ -139,4 +135,12 @@ export type Override = {
   upscalers: Partial<unknown>[]
   controlNets: Partial<ControlNet>[]
   textualInversions: Partial<TextualInversion>[]
+}
+
+export const EmptyOverride = {
+  models: [],
+  loras: [],
+  upscalers: [],
+  controlNets: [],
+  textualInversions: [],
 }
