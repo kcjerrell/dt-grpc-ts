@@ -28,7 +28,7 @@ async function updateClient() {
   cp.execSync('protoc --ts_out=src/generated/grpc proto/imageService.proto')
 }
 
-if (import.meta === process.argv[1]) {
+// if (import.meta.url === process.argv[1]) {
   updateConfig().then(() => process.exit(0)).catch(console.error)
   updateClient().then(() => process.exit(0)).catch(console.error) 
-}
+// }
