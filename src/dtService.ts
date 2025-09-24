@@ -169,7 +169,7 @@ export class DTService {
             responseImages.push(...res.generatedImages)
           } else if (onUpdate && signpost) {
             const preview = res.previewImage?.byteLength
-              ? new ImageBuffer(decodePreview(Uint8Array.from(res.previewImage), modelVersion))
+              ? new ImageBuffer(await decodePreview(Uint8Array.from(res.previewImage), modelVersion))
               : undefined
             onUpdate({ signpost, preview })
           }
@@ -192,7 +192,7 @@ export class DTService {
         .on('close', (e: ImageGenerationRequest) => {
           bar1.stop()
           if (outputFormat === 'tensor') resolve(responseImages.map(im => Uint8Array.from(im)))
-          else resolve(responseImages.map(im => ImageBuffer.fromDTTensor(Uint8Array.from(im))))
+          else resolve(Promise.all(responseImages.map(im => ImageBuffer.fromDTTensor(Uint8Array.from(im)))))
         })
 
       // end

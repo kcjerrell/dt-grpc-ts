@@ -14,7 +14,7 @@ export interface Config {
   guidanceScale?: number
   strength?: number
   model?: string
-  sampler?: SamplerType
+  sampler?: SamplerType | string
   batchCount?: number
   batchSize?: number
   hiresFix?: boolean
@@ -23,7 +23,7 @@ export interface Config {
   hiresFixStrength?: number
   upscaler?: string
   imageGuidanceScale?: number
-  seedMode?: SeedMode
+  seedMode?: SeedMode | string
   clipSkip?: number
   controls?: ControlConfig[]
   loras?: LoraConfig[]

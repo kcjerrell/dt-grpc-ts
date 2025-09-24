@@ -92,8 +92,7 @@ export class ImageBuffer implements BufferWithInfo {
 
       if (data.byteLength != width * height * channels)
         throw new Error(
-          `image size (${width}x${height}, ${channels} channels) does not match data size (${
-            data.byteLength
+          `image size (${width}x${height}, ${channels} channels) does not match data size (${data.byteLength
           }). Expected ${width * height * channels}`
         )
 
@@ -128,10 +127,10 @@ export class ImageBuffer implements BufferWithInfo {
    * @param value - An array representing the color values to set
    * @param gray - If true, the grayscale value from `value[0]` is applied to all color channels.
    */
-  setPixel(x: number, y: number, value: [number, number?, number?, number?], gray = false) {
+  setPixel(x: number, y: number, value: Uint8Array, gray = false) {
     const addr = (y * this.width + x) * this.channels
     for (let c = 0; c < this.colorChannels; c += 1)
-      this.data[addr + c] = gray ? value[0] : value[c] ?? 0
+      this.data[addr + c] = gray ? value[0] ?? 0: value[c] ?? 0
     if (this.channels === 4) this.data[addr + 3] = value[3] ?? 255
   }
 
@@ -145,6 +144,45 @@ export class ImageBuffer implements BufferWithInfo {
   getPixel(x: number, y: number) {
     const addr = (y * this.width + x) * this.channels
     return this.data.slice(addr, addr + this.channels)
+  }
+
+  minimum() {
+    let minValue = 255
+    let minGray = 255
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const p = this.getPixel(x, y)
+        const gray = p[0] + p[1] + p[2]
+        const min = Math.min(p[0], p[1], p[2])
+        if (min < minValue) minValue = min
+        if (gray < minGray) minGray = gray
+      }
+    }
+    return { minValue, minGray: minGray / 3 }
+  }
+
+  maximum() {
+    let maxValue = 0
+    let maxGray = 0
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const p = this.getPixel(x, y)
+        const gray = p[0] + p[1] + p[2]
+        const max = Math.max(p[0], p[1], p[2])
+        if (max > maxValue) maxValue = max
+        if (gray > maxGray) maxGray = gray
+      }
+    }
+    return { maxValue, maxGray: maxGray / 3 }
+  }
+
+  map(mapFn: mapFn) {
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const p = this.getPixel(x, y)
+        this.setPixel(x, y, mapFn(p, x, y))
+      }
+    }
   }
 
   sharp(): Sharp
@@ -167,6 +205,22 @@ export class ImageBuffer implements BufferWithInfo {
 
     if (args[0]) return ImageBuffer.fromPipeline(args[0](s))
     return s
+  }
+
+  async composite(image: ImageBuffer, mix = 0.5, blendMode: sharp.Blend = 'over'): Promise<ImageBuffer> {
+    const inputImage = await image.sharp().removeAlpha().ensureAlpha(mix).png().toBuffer()
+    return await this.sharp(s =>
+      s.composite([
+        {
+          input: inputImage,
+          blend: blendMode,
+        },
+      ])
+    )
+  }
+
+  clone() {
+    return new ImageBuffer(Buffer.from(this.data), this.width, this.height, this.channels)
   }
 
   /**
@@ -229,8 +283,8 @@ export class ImageBuffer implements BufferWithInfo {
    * @returns A new ImageBuffer object.
    */
   /*******  8d939cb2-b72d-4b10-8753-f8092f26a5b8  *******/
-  static fromDTTensor(data: Uint8Array) {
-    return new ImageBuffer(convertResponseImage(data))
+  static async fromDTTensor(data: Uint8Array) {
+    return new ImageBuffer(await convertResponseImage(data))
   }
 
   /**
@@ -275,8 +329,10 @@ export async function resize(
 ) {
   if (img.width === width && img.height === height) return img
 
-  return await img.sharp((s) => s.resize(width, height, { fit: 'fill', kernel: 'lanczos2' }))
+  return await img.sharp(s => s.resize(width, height, { fit: 'fill', kernel: 'lanczos2' }))
 }
+
+type mapFn = (pixel: Uint8Array, x: number, y: number) => Uint8Array
 
 export type ImageBufferType =
   | ArrayBuffer
@@ -328,4 +384,3 @@ export function isBufferWithInfo(value: unknown): value is BufferWithInfo {
 
   return false
 }
-

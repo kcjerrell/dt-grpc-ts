@@ -27,15 +27,15 @@ decoders['v1'] =
  *  width * height * 4 array of float16 values
  *  decodes the image into a width * height * 3 array of bytes (uint8)
  */
-export function decodePreview(
+export async function decodePreview(
   preview: Uint8Array,
   version?: string
-): BufferWithInfo {
+): Promise<BufferWithInfo> {
   const intBuffer = new Uint32Array(preview.buffer, 0, 17);
   const [height, width, channels] = intBuffer.slice(6, 9);
 
   if (!version || !(version in decoders) || channels !== 4)
-    return convertResponseImage(preview);
+    return await convertResponseImage(preview);
 
   const offset = 68;
 

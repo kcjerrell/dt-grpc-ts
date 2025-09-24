@@ -106,6 +106,20 @@ export function buildRequest(
             continue
           }
 
+          if (hint.hintType === 'pose') {
+            const poseImage = await resized.sharp(s => s.removeAlpha())
+            const min = poseImage.minimum().minValue
+            const max = poseImage.maximum().maxValue
+            poseImage.map(p => p.map(v => ((v - min) / (max - min)) * 127 + 127))
+            hb.addHintImage('pose', await poseImage.toDTTensor(), hint.weight)
+
+            if (request.config.hiresFix && request.config.hiresFixStartWidth && request.config.hiresFixStartHeight) {
+              const small = await resize(poseImage, request.config.hiresFixStartWidth, request.config.hiresFixStartHeight)
+              hb.addHintImage('pose', await small.toDTTensor(), hint.weight)
+            }
+            continue
+          }
+
           const tensor = await resized.toDTTensor()
           hb.addHintImage(hint.hintType, tensor, hint.weight)
         }

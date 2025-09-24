@@ -9,6 +9,7 @@ import { Config, ControlConfig, LoraConfig } from './types'
 import { ControlT } from './generated/data/control'
 import { ControlMode } from './generated/data/control-mode'
 import { ControlInputType } from './generated/data/control-input-type'
+import { getSampler, getSeedMode } from './typeConverters'
 
 // default configuration from DT app
 // some properties renamed
@@ -65,7 +66,7 @@ export function buildConfig(config: Config = {}) {
     c.guidanceScale,
     c.strength, // strength
     c.model, // model
-    c.sampler,
+    getSampler(c.sampler),
     c.batchCount, // batchCount
     c.batchSize, // batchSize
     c.hiresFix,
@@ -74,7 +75,7 @@ export function buildConfig(config: Config = {}) {
     c.hiresFixStrength,
     c.upscaler,
     c.imageGuidanceScale,
-    c.seedMode, // seedMode
+    getSeedMode(c.seedMode) , // seedMode
     c.clipSkip, // clipSkip
     getControlsTs(c.controls), // controls
     getLoraTs(c.loras), // loras

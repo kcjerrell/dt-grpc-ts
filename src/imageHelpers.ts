@@ -1,22 +1,32 @@
 import sharp from 'sharp'
 import { Float16Array, setFloat16 } from '@petamoriken/float16'
 import { BufferWithInfo } from './imageBuffer'
+import { decompress } from './fpzip/decompress'
 
 /**
  * @param responseImage the image data, from ImageGenerationReponse.generatedImages
  * @returns an object with the image data, size, and channel count
  */
-export function convertResponseImage(responseImage: Uint8Array): BufferWithInfo {
+export async function convertResponseImage(responseImage: Uint8Array): Promise<BufferWithInfo> {
   const intBuffer = new Uint32Array(responseImage.buffer, 0, 17)
   const [height, width, channels] = intBuffer.slice(6, 9)
-
-  const offset = 68
   const length = width * height * channels * 2
+  const offset = 68
+
+  const isCompressed = intBuffer[0] === 1012247
+
+  let f16rgb: Float16Array
+  if (isCompressed) {
+    const float32 = await decompress(responseImage.slice(68))
+    f16rgb = Float16Array.from(float32)
+  }
+  else {
+    f16rgb = new Float16Array(responseImage.buffer, offset, length / 2)
+  }
+
 
   console.debug(`${width}x${height} image with ${channels} channels`)
   console.debug(`Input size: ${responseImage.byteLength} (Expected: ${length + 68})`)
-
-  const f16rgb = new Float16Array(responseImage.buffer, offset, length / 2)
 
   let u8c: Uint8ClampedArray
 
@@ -58,7 +68,7 @@ export function convertResponseImage(responseImage: Uint8Array): BufferWithInfo 
  * @param path file path to save the image
  */
 export async function saveResponseImage(responseImage: Uint8Array, path: string) {
-  const { data, width, height, channels } = convertResponseImage(responseImage)
+  const { data, width, height, channels } = await convertResponseImage(responseImage)
 
   return await sharp(data, {
     raw: { width, height, channels: channels as 3 | 4 },
