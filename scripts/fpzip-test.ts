@@ -16,8 +16,11 @@ async function test() {
 
   // const decompress = fpzip.decompress
 
-  const item = new Uint8Array(filedata.length)
-  filedata.copy(item)
+  const file = await fse.readFile(
+    '/Users/kcjer/Library/Application Support/com.kcjer.dtm/tensor_history_282038959'
+  )
+  const item = new Uint8Array(file)
+  // filedata.copy(item)
   const header = new Uint32Array(item.buffer, 0, 17)
   const [width, height, channels] = header.slice(6, 9)
 
@@ -25,6 +28,7 @@ async function test() {
   // console.log('First 16 bytes of compressed input:', Array.from(item.subarray(68, 68 + 16)));
 
   const decompressed = await decompress(item.subarray(68));
+  // const decompressed = await decompress()
 
   // Debug: log first 16 floats of decompressed output
   // console.log('First 16 floats of decompressed:', Array.from(decompressed.slice(0, 16)));
@@ -48,7 +52,11 @@ async function test() {
   data.set(headerBytes, 0);
   data.set(bytes, headerBytes.length);
 
-  const image = ImageBuffer.fromDTTensor(data);
+  const image = await ImageBuffer.fromDTTensor(data);
+
+  await image.toFile(
+    "/Users/kcjer/Library/Application Support/com.kcjer.dtm/tensor_history_282038959.png"
+  )
 }
 
 async function testTest(n = 200, reportEvery = 20, sleep = 20) {

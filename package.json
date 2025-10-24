@@ -17,13 +17,13 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.13.2",
     "@petamoriken/float16": "^3.9.2",
-    "@types/cli-progress": "^3.11.6",
     "cli-progress": "^3.12.0",
     "flatbuffers": "^25.2.10",
     "google-protobuf": "^3.21.4",
     "sharp": "^0.34.4"
   },
   "devDependencies": {
+    "@types/cli-progress": "^3.11.6",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.13.14",
     "@vitest/ui": "^3.1.1",
