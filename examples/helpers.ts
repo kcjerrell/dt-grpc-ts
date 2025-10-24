@@ -1,5 +1,5 @@
 import { join } from 'path'
-import { ImageBuffer } from '../imageBuffer'
+import { ImageBuffer } from '../dist'
 
 export async function saveResult(result: Uint8Array<ArrayBufferLike>[], name: string) {
   return await Promise.all(

@@ -1,4 +1,4 @@
-import { ControlInputType, ControlMode, ImageBuffer, buildRequest, DTService } from '..'
+import { ControlInputType, ControlMode, ImageBuffer, buildRequest, DTService } from '../dist'
 
 export async function inpaintWithMaskExample() {
   const dtc = new DTService('localhost:7859')

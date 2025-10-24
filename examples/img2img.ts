@@ -1,4 +1,4 @@
-import { buildRequest, DTService } from '..'
+import { buildRequest, DTService } from '../dist'
 
 export async function img2imgExample() {
   const dtc = new DTService('localhost:7859')

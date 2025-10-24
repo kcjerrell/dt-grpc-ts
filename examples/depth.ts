@@ -1,5 +1,5 @@
 import { join } from 'path'
-import { buildRequest, ControlMode, DTService, ImageBuffer } from '..'
+import { buildRequest, ControlMode, DTService, ImageBuffer } from '../dist'
 
 async function depthExample() {
   const dtc = new DTService('localhost:7859')
