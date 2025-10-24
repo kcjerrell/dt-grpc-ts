@@ -8,7 +8,7 @@ interface FpzipModule {
     HEAPU8: Uint8Array;
 }
 
-import fpzipModule from './fpzip_wasm';
+import fpzipModule from './fpzip_wasm.js';
 
 let _fpzip: FpzipModule | null = null;
 async function loadFpzip(): Promise<FpzipModule> {

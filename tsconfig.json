@@ -2,22 +2,22 @@
   "include": [
     "src",
     "tests", 
-    "scripts",
+    "scripts"
   ],
   "exclude": [],
   "compilerOptions": {
-    "module": "NodeNext",
+    "module": "ES2022",
     "target": "ESNext",
     "lib": [
       "esnext"
     ],
     "declaration": true,
     "strict": true,
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "allowJs": true
   }
 }

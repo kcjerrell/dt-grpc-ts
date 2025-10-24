@@ -127,7 +127,7 @@ export class ImageBuffer implements BufferWithInfo {
    * @param value - An array representing the color values to set
    * @param gray - If true, the grayscale value from `value[0]` is applied to all color channels.
    */
-  setPixel(x: number, y: number, value: Uint8Array, gray = false) {
+  setPixel(x: number, y: number, value: Uint8Array | number[], gray = false) {
     const addr = (y * this.width + x) * this.channels
     for (let c = 0; c < this.colorChannels; c += 1)
       this.data[addr + c] = gray ? value[0] ?? 0: value[c] ?? 0

@@ -7,9 +7,10 @@ import {
   DeviceType,
   EchoReply,
   EchoRequest,
+  FileListRequest,
   ImageGenerationRequest,
   ImageGenerationResponse,
-  ImageGenerationServiceClient
+  ImageGenerationServiceClient,
 } from './generated/grpc/imageService'
 import { ImageBuffer } from './imageBuffer'
 import { isRequestBuilder, RequestBuilder } from './imageRequestBuilder'
@@ -117,6 +118,17 @@ export class DTService {
     })
   }
 
+  async filesExist(files: string[], filesWithHash: [], sharedSecret?: string) {
+    const request = FileListRequest.fromObject({ files, filesWithHash, sharedSecret })
+    return new Promise((resolve, reject) => {
+      this.client.FilesExist(request, (err, value) => {
+        if (err) reject(err)
+        const res = value?.toObject()
+        resolve(res)
+      })
+    })
+  }
+
   async generateImage<T extends 'tensor' | 'imagebuffer' = 'imagebuffer'>(
     request: ImageRequest | RequestBuilder,
     opts: GenerateImageOptions<T> = {}
@@ -131,7 +143,9 @@ export class DTService {
       await this.echo()
     }
 
-    const modelVersion = this.models.models.find(m => m.file === config.model || m.name === config.model)?.version
+    const modelVersion = this.models.models.find(
+      m => m.file === config.model || m.name === config.model
+    )?.version
 
     const message = ImageGenerationRequest.fromObject({
       scaleFactor: 1,
@@ -169,7 +183,9 @@ export class DTService {
             responseImages.push(...res.generatedImages)
           } else if (onUpdate && signpost) {
             const preview = res.previewImage?.byteLength
-              ? new ImageBuffer(await decodePreview(Uint8Array.from(res.previewImage), modelVersion))
+              ? new ImageBuffer(
+                  await decodePreview(Uint8Array.from(res.previewImage), modelVersion)
+                )
               : undefined
             onUpdate({ signpost, preview })
           }
@@ -192,7 +208,10 @@ export class DTService {
         .on('close', (e: ImageGenerationRequest) => {
           bar1.stop()
           if (outputFormat === 'tensor') resolve(responseImages.map(im => Uint8Array.from(im)))
-          else resolve(Promise.all(responseImages.map(im => ImageBuffer.fromDTTensor(Uint8Array.from(im)))))
+          else
+            resolve(
+              Promise.all(responseImages.map(im => ImageBuffer.fromDTTensor(Uint8Array.from(im))))
+            )
         })
 
       // end
