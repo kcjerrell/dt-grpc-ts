@@ -3,6 +3,7 @@ import { buildRequest, DTService } from '..'
 export async function img2imgExample() {
   const dtc = new DTService('localhost:7859')
 
+  // create an image 
   const request = buildRequest(
     {
       model: 'sd_v1.5_f16.ckpt',
@@ -13,11 +14,10 @@ export async function img2imgExample() {
     'adorable big brown dog',
     'boring, blurry, watermark'
   )
-
   const [image] = await dtc.generateImage(request)
-
   await image.toFile('examples_img2img_output1.png')
 
+  // use that image for I2I
   const request2 = await buildRequest(
     {
       model: 'sd_v1.5_f16.ckpt',

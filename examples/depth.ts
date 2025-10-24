@@ -25,16 +25,19 @@ async function depthExample() {
     ],
   }
 
+  // use the ImageBuffer class to provide control images
+  const depthMap = await ImageBuffer.fromFile(join(__dirname, 'depth.png'))
+
   const request = buildRequest(config, 'spring, lush trees, blue skies')
     // use addHint to add control images to the request
-    .addHint('depth', await ImageBuffer.fromFile(join(__dirname, 'depth.png')), 1)
+    .addHint('depth', depthMap, 1)
 
   const [image1] = await dtc.generateImage(request)
   await image1.toFile('example_depth_output1.png')
 
   const request2 = buildRequest(config, 'winter, snow covered trees, gray stormy sky')
     // use addHint to add control images to the request
-    .addHint('depth', await ImageBuffer.fromFile(join(__dirname, 'depth.png')), 1)
+    .addHint('depth', depthMap, 1)
 
   const [image2] = await dtc.generateImage(request2)
   await image2.toFile('example_depth_output2..png')
