@@ -16,6 +16,8 @@ enum SamplerType: byte {
   DPMPPSDEAYS,
   DPMPP2MTrailing,
   DDIMTrailing,
+  UniPCTrailing,
+  UniPCAYS,
 }
 
 enum SeedMode: byte {
@@ -66,9 +68,16 @@ table Control {
   input_override: ControlInputType = Unspecified;
 }
 
+enum LoRAMode: byte {
+  All,
+  Base,
+  Refiner,
+}
+
 table LoRA {
   file: string;
   weight: float = 0.6;
+  mode: LoRAMode = All;
 }
 
 table GenerationConfiguration {
@@ -154,6 +163,8 @@ table GenerationConfiguration {
   causal_inference_enabled: bool = false;
   causal_inference: int = 3;
   causal_inference_pad: int = 0;
+  cfg_zero_star: bool = false;
+  cfg_zero_init_steps: int = 0;
 }
 
 root_type GenerationConfiguration;

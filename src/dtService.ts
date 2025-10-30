@@ -32,6 +32,8 @@ export type GenerateImageOptions<T extends 'tensor' | 'imagebuffer' = 'imagebuff
   onUpdate?: (e: UpdateData) => void
   outputFormat?: T
   abortSignal?: AbortSignal
+  debug?: boolean
+  progress?: boolean
 }
 
 export type ImageRequest = {
@@ -118,7 +120,7 @@ export class DTService {
     })
   }
 
-  async filesExist(files: string[], filesWithHash: [], sharedSecret?: string) {
+  async filesExist(files: string[], filesWithHash: string[], sharedSecret?: string) {
     const request = FileListRequest.fromObject({ files, filesWithHash, sharedSecret })
     return new Promise((resolve, reject) => {
       this.client.FilesExist(request, (err, value) => {
@@ -131,8 +133,11 @@ export class DTService {
 
   async generateImage<T extends 'tensor' | 'imagebuffer' = 'imagebuffer'>(
     request: ImageRequest | RequestBuilder,
-    opts: GenerateImageOptions<T> = {}
+    options: GenerateImageOptions<T> = {}
   ): Promise<T extends 'tensor' ? Uint8Array[] : ImageBuffer[]> {
+    const opts = { ...{ progress: true }, ...options }
+    if (opts.debug) opts.progress = false
+
     const req = isRequestBuilder(request) ? await request.build() : request
     const { abortSignal, onUpdate, outputFormat } = opts
 
@@ -163,8 +168,10 @@ export class DTService {
 
     await this.waitForReady()
 
-    const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
-    bar1.start(config.steps ?? 1, 0)
+    const bar1 = opts.progress
+      ? new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
+      : null
+    if (bar1) bar1.start(config.steps ?? 1, 0)
 
     const responseImages: Uint8Array[] = []
 
@@ -177,7 +184,11 @@ export class DTService {
           const res = e.toObject()
           const signpost = res.currentSignpost
 
-          if (signpost?.sampling?.step) bar1.update(signpost.sampling.step)
+          if (opts.debug && signpost) {
+            console.debug(JSON.stringify(signpost, null, 2))
+          }
+
+          if (signpost?.sampling?.step) bar1?.update(signpost.sampling.step)
 
           if (res.generatedImages?.length) {
             responseImages.push(...res.generatedImages)
@@ -192,12 +203,14 @@ export class DTService {
         })
 
         // status
-        // .on('status', (e: ImageGenerationRequest) => console.debug('status', e))
+        .on('status', (e: ImageGenerationRequest) => {
+          if (opts.debug) console.debug(JSON.stringify(e, null, 2))
+        })
 
         // error
         .on('error', (e: ImageGenerationResponse) => {
           console.error('error', e)
-          bar1.stop()
+          bar1?.stop()
           reject(e)
         })
 
@@ -206,7 +219,7 @@ export class DTService {
 
         // close
         .on('close', (e: ImageGenerationRequest) => {
-          bar1.stop()
+          bar1?.stop()
           if (outputFormat === 'tensor') resolve(responseImages.map(im => Uint8Array.from(im)))
           else
             resolve(

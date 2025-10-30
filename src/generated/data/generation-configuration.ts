@@ -439,8 +439,33 @@ teaCacheMaxSkipSteps():number {
   return offset ? this.bb!.readInt32(this.bb_pos + offset) : 3;
 }
 
+causalInferenceEnabled():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 162);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+causalInference():number {
+  const offset = this.bb!.__offset(this.bb_pos, 164);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 3;
+}
+
+causalInferencePad():number {
+  const offset = this.bb!.__offset(this.bb_pos, 166);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
+cfgZeroStar():boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 168);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+cfgZeroInitSteps():number {
+  const offset = this.bb!.__offset(this.bb_pos, 170);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+}
+
 static startGenerationConfiguration(builder:flatbuffers.Builder) {
-  builder.startObject(79);
+  builder.startObject(84);
 }
 
 static addId(builder:flatbuffers.Builder, id:bigint) {
@@ -775,6 +800,26 @@ static addTeaCacheMaxSkipSteps(builder:flatbuffers.Builder, teaCacheMaxSkipSteps
   builder.addFieldInt32(78, teaCacheMaxSkipSteps, 3);
 }
 
+static addCausalInferenceEnabled(builder:flatbuffers.Builder, causalInferenceEnabled:boolean) {
+  builder.addFieldInt8(79, +causalInferenceEnabled, +false);
+}
+
+static addCausalInference(builder:flatbuffers.Builder, causalInference:number) {
+  builder.addFieldInt32(80, causalInference, 3);
+}
+
+static addCausalInferencePad(builder:flatbuffers.Builder, causalInferencePad:number) {
+  builder.addFieldInt32(81, causalInferencePad, 0);
+}
+
+static addCfgZeroStar(builder:flatbuffers.Builder, cfgZeroStar:boolean) {
+  builder.addFieldInt8(82, +cfgZeroStar, +false);
+}
+
+static addCfgZeroInitSteps(builder:flatbuffers.Builder, cfgZeroInitSteps:number) {
+  builder.addFieldInt32(83, cfgZeroInitSteps, 0);
+}
+
 static endGenerationConfiguration(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
@@ -788,7 +833,7 @@ static finishSizePrefixedGenerationConfigurationBuffer(builder:flatbuffers.Build
   builder.finish(offset, undefined, true);
 }
 
-static createGenerationConfiguration(builder:flatbuffers.Builder, id:bigint, startWidth:number, startHeight:number, seed:number, steps:number, guidanceScale:number, strength:number, modelOffset:flatbuffers.Offset, sampler:SamplerType, batchCount:number, batchSize:number, hiresFix:boolean, hiresFixStartWidth:number, hiresFixStartHeight:number, hiresFixStrength:number, upscalerOffset:flatbuffers.Offset, imageGuidanceScale:number, seedMode:SeedMode, clipSkip:number, controlsOffset:flatbuffers.Offset, lorasOffset:flatbuffers.Offset, maskBlur:number, faceRestorationOffset:flatbuffers.Offset, clipWeight:number, negativePromptForImagePrior:boolean, imagePriorSteps:number, refinerModelOffset:flatbuffers.Offset, originalImageHeight:number, originalImageWidth:number, cropTop:number, cropLeft:number, targetImageHeight:number, targetImageWidth:number, aestheticScore:number, negativeAestheticScore:number, zeroNegativePrompt:boolean, refinerStart:number, negativeOriginalImageHeight:number, negativeOriginalImageWidth:number, nameOffset:flatbuffers.Offset, fpsId:number, motionBucketId:number, condAug:number, startFrameCfg:number, numFrames:number, maskBlurOutset:number, sharpness:number, shift:number, stage2Steps:number, stage2Cfg:number, stage2Shift:number, tiledDecoding:boolean, decodingTileWidth:number, decodingTileHeight:number, decodingTileOverlap:number, stochasticSamplingGamma:number, preserveOriginalAfterInpaint:boolean, tiledDiffusion:boolean, diffusionTileWidth:number, diffusionTileHeight:number, diffusionTileOverlap:number, upscalerScaleFactor:number, t5TextEncoder:boolean, separateClipL:boolean, clipLTextOffset:flatbuffers.Offset, separateOpenClipG:boolean, openClipGTextOffset:flatbuffers.Offset, speedUpWithGuidanceEmbed:boolean, guidanceEmbed:number, resolutionDependentShift:boolean, teaCacheStart:number, teaCacheEnd:number, teaCacheThreshold:number, teaCache:boolean, separateT5:boolean, t5TextOffset:flatbuffers.Offset, teaCacheMaxSkipSteps:number):flatbuffers.Offset {
+static createGenerationConfiguration(builder:flatbuffers.Builder, id:bigint, startWidth:number, startHeight:number, seed:number, steps:number, guidanceScale:number, strength:number, modelOffset:flatbuffers.Offset, sampler:SamplerType, batchCount:number, batchSize:number, hiresFix:boolean, hiresFixStartWidth:number, hiresFixStartHeight:number, hiresFixStrength:number, upscalerOffset:flatbuffers.Offset, imageGuidanceScale:number, seedMode:SeedMode, clipSkip:number, controlsOffset:flatbuffers.Offset, lorasOffset:flatbuffers.Offset, maskBlur:number, faceRestorationOffset:flatbuffers.Offset, clipWeight:number, negativePromptForImagePrior:boolean, imagePriorSteps:number, refinerModelOffset:flatbuffers.Offset, originalImageHeight:number, originalImageWidth:number, cropTop:number, cropLeft:number, targetImageHeight:number, targetImageWidth:number, aestheticScore:number, negativeAestheticScore:number, zeroNegativePrompt:boolean, refinerStart:number, negativeOriginalImageHeight:number, negativeOriginalImageWidth:number, nameOffset:flatbuffers.Offset, fpsId:number, motionBucketId:number, condAug:number, startFrameCfg:number, numFrames:number, maskBlurOutset:number, sharpness:number, shift:number, stage2Steps:number, stage2Cfg:number, stage2Shift:number, tiledDecoding:boolean, decodingTileWidth:number, decodingTileHeight:number, decodingTileOverlap:number, stochasticSamplingGamma:number, preserveOriginalAfterInpaint:boolean, tiledDiffusion:boolean, diffusionTileWidth:number, diffusionTileHeight:number, diffusionTileOverlap:number, upscalerScaleFactor:number, t5TextEncoder:boolean, separateClipL:boolean, clipLTextOffset:flatbuffers.Offset, separateOpenClipG:boolean, openClipGTextOffset:flatbuffers.Offset, speedUpWithGuidanceEmbed:boolean, guidanceEmbed:number, resolutionDependentShift:boolean, teaCacheStart:number, teaCacheEnd:number, teaCacheThreshold:number, teaCache:boolean, separateT5:boolean, t5TextOffset:flatbuffers.Offset, teaCacheMaxSkipSteps:number, causalInferenceEnabled:boolean, causalInference:number, causalInferencePad:number, cfgZeroStar:boolean, cfgZeroInitSteps:number):flatbuffers.Offset {
   GenerationConfiguration.startGenerationConfiguration(builder);
   GenerationConfiguration.addId(builder, id);
   GenerationConfiguration.addStartWidth(builder, startWidth);
@@ -867,6 +912,11 @@ static createGenerationConfiguration(builder:flatbuffers.Builder, id:bigint, sta
   GenerationConfiguration.addSeparateT5(builder, separateT5);
   GenerationConfiguration.addT5Text(builder, t5TextOffset);
   GenerationConfiguration.addTeaCacheMaxSkipSteps(builder, teaCacheMaxSkipSteps);
+  GenerationConfiguration.addCausalInferenceEnabled(builder, causalInferenceEnabled);
+  GenerationConfiguration.addCausalInference(builder, causalInference);
+  GenerationConfiguration.addCausalInferencePad(builder, causalInferencePad);
+  GenerationConfiguration.addCfgZeroStar(builder, cfgZeroStar);
+  GenerationConfiguration.addCfgZeroInitSteps(builder, cfgZeroInitSteps);
   return GenerationConfiguration.endGenerationConfiguration(builder);
 }
 
@@ -948,7 +998,12 @@ unpack(): GenerationConfigurationT {
     this.teaCache(),
     this.separateT5(),
     this.t5Text(),
-    this.teaCacheMaxSkipSteps()
+    this.teaCacheMaxSkipSteps(),
+    this.causalInferenceEnabled(),
+    this.causalInference(),
+    this.causalInferencePad(),
+    this.cfgZeroStar(),
+    this.cfgZeroInitSteps()
   );
 }
 
@@ -1031,6 +1086,11 @@ unpackTo(_o: GenerationConfigurationT): void {
   _o.separateT5 = this.separateT5();
   _o.t5Text = this.t5Text();
   _o.teaCacheMaxSkipSteps = this.teaCacheMaxSkipSteps();
+  _o.causalInferenceEnabled = this.causalInferenceEnabled();
+  _o.causalInference = this.causalInference();
+  _o.causalInferencePad = this.causalInferencePad();
+  _o.cfgZeroStar = this.cfgZeroStar();
+  _o.cfgZeroInitSteps = this.cfgZeroInitSteps();
 }
 }
 
@@ -1112,7 +1172,12 @@ constructor(
   public teaCache: boolean = false,
   public separateT5: boolean = false,
   public t5Text: string|Uint8Array|null = null,
-  public teaCacheMaxSkipSteps: number = 3
+  public teaCacheMaxSkipSteps: number = 3,
+  public causalInferenceEnabled: boolean = false,
+  public causalInference: number = 3,
+  public causalInferencePad: number = 0,
+  public cfgZeroStar: boolean = false,
+  public cfgZeroInitSteps: number = 0
 ){}
 
 
@@ -1205,7 +1270,12 @@ pack(builder:flatbuffers.Builder): flatbuffers.Offset {
     this.teaCache,
     this.separateT5,
     t5Text,
-    this.teaCacheMaxSkipSteps
+    this.teaCacheMaxSkipSteps,
+    this.causalInferenceEnabled,
+    this.causalInference,
+    this.causalInferencePad,
+    this.cfgZeroStar,
+    this.cfgZeroInitSteps
   );
 }
 }

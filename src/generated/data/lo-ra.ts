@@ -4,6 +4,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+import { LoRAMode } from './lo-ramode.js';
 
 
 export class LoRA implements flatbuffers.IUnpackableObject<LoRAT> {
@@ -36,8 +37,13 @@ weight():number {
   return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.6;
 }
 
+mode():LoRAMode {
+  const offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.readInt8(this.bb_pos + offset) : LoRAMode.All;
+}
+
 static startLoRA(builder:flatbuffers.Builder) {
-  builder.startObject(2);
+  builder.startObject(3);
 }
 
 static addFile(builder:flatbuffers.Builder, fileOffset:flatbuffers.Offset) {
@@ -48,22 +54,28 @@ static addWeight(builder:flatbuffers.Builder, weight:number) {
   builder.addFieldFloat32(1, weight, 0.6);
 }
 
+static addMode(builder:flatbuffers.Builder, mode:LoRAMode) {
+  builder.addFieldInt8(2, mode, LoRAMode.All);
+}
+
 static endLoRA(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
 }
 
-static createLoRA(builder:flatbuffers.Builder, fileOffset:flatbuffers.Offset, weight:number):flatbuffers.Offset {
+static createLoRA(builder:flatbuffers.Builder, fileOffset:flatbuffers.Offset, weight:number, mode:LoRAMode):flatbuffers.Offset {
   LoRA.startLoRA(builder);
   LoRA.addFile(builder, fileOffset);
   LoRA.addWeight(builder, weight);
+  LoRA.addMode(builder, mode);
   return LoRA.endLoRA(builder);
 }
 
 unpack(): LoRAT {
   return new LoRAT(
     this.file(),
-    this.weight()
+    this.weight(),
+    this.mode()
   );
 }
 
@@ -71,13 +83,15 @@ unpack(): LoRAT {
 unpackTo(_o: LoRAT): void {
   _o.file = this.file();
   _o.weight = this.weight();
+  _o.mode = this.mode();
 }
 }
 
 export class LoRAT implements flatbuffers.IGeneratedObject {
 constructor(
   public file: string|Uint8Array|null = null,
-  public weight: number = 0.6
+  public weight: number = 0.6,
+  public mode: LoRAMode = LoRAMode.All
 ){}
 
 
@@ -86,7 +100,8 @@ pack(builder:flatbuffers.Builder): flatbuffers.Offset {
 
   return LoRA.createLoRA(builder,
     file,
-    this.weight
+    this.weight,
+    this.mode
   );
 }
 }

@@ -19,5 +19,7 @@ export enum SamplerType {
   EulerAAYS = 13,
   DPMPPSDEAYS = 14,
   DPMPP2MTrailing = 15,
-  DDIMTrailing = 16
+  DDIMTrailing = 16,
+  UniPCTrailing = 17,
+  UniPCAYS = 18
 }

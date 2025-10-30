@@ -13,7 +13,7 @@ import { getSampler, getSeedMode } from './typeConverters'
 
 // default configuration from DT app
 // some properties renamed
-const drawThingsDefault = {
+const drawThingsDefault: Config = {
   preserveOriginalAfterInpaint: true,
   batchCount: 1,
   seed: -1,
@@ -49,7 +49,14 @@ const drawThingsDefault = {
   refinerStart: 0.85,
   targetImageHeight: 512,
   targetImageWidth: 512,
-} as Config
+  teaCache: false,
+  teaCacheEnd: -1,
+  teaCacheMaxSkipSteps: 3,
+  teaCacheStart: 5,
+  teaCacheThreshold: 0.2,
+  cfgZeroInitSteps: 0,
+  cfgZeroStar: false,
+}
 
 export function buildConfig(config: Config = {}) {
   const c: Config = { ...drawThingsDefault, ...config }
@@ -75,7 +82,7 @@ export function buildConfig(config: Config = {}) {
     c.hiresFixStrength,
     c.upscaler,
     c.imageGuidanceScale,
-    getSeedMode(c.seedMode) , // seedMode
+    getSeedMode(c.seedMode), // seedMode
     c.clipSkip, // clipSkip
     getControlsTs(c.controls), // controls
     getLoraTs(c.loras), // loras
@@ -127,7 +134,19 @@ export function buildConfig(config: Config = {}) {
     c.openClipGText, // openClipGText
     c.speedUpWithGuidanceEmbed, // speedUpWithGuidanceEmbed
     c.guidanceEmbed, // guidanceEmbed
-    true
+    true,
+    c.teaCacheStart, // teaCacheStart
+    c.teaCacheEnd, // teaCacheEnd
+    c.teaCacheThreshold, // teaCacheThreshold
+    c.teaCache, // teaCache
+    c.separateT5, // separateT5
+    c.t5Text, // t5Text
+    c.teaCacheMaxSkipSteps, // teaCacheMaxSkipSteps
+    c.causalInferenceEnabled, // causalInferenceEnabled
+    c.causalInference, // causalInference
+    c.causalInferencePad, // causalInferencePad
+    c.cfgZeroStar, // cfgZeroStar
+    c.cfgZeroInitSteps, // cfgZeroInitSteps
   )
 
   return genConfig

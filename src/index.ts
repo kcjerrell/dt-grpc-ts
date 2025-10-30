@@ -14,6 +14,7 @@ export { type Override } from './override'
 export { ImageGenerationSignpostProto } from './generated/grpc/imageService'
 
 export { ChannelCredentials } from '@grpc/grpc-js'
+export { getCredentials } from './cred'
 
 export { buildRequest } from './imageRequestBuilder'
 

@@ -14,7 +14,7 @@ export interface Config {
   guidanceScale?: number
   strength?: number
   model?: string
-  sampler?: SamplerType | string
+  sampler?: SamplerType | string | number
   batchCount?: number
   batchSize?: number
   hiresFix?: boolean
@@ -23,7 +23,7 @@ export interface Config {
   hiresFixStrength?: number
   upscaler?: string
   imageGuidanceScale?: number
-  seedMode?: SeedMode | string
+  seedMode?: SeedMode | string | number
   clipSkip?: number
   controls?: ControlConfig[]
   loras?: LoraConfig[]
@@ -76,6 +76,18 @@ export interface Config {
   speedUpWithGuidanceEmbed?: boolean
   guidanceEmbed?: number
   resolutionDependentShift?: boolean
+  teaCache?: false
+  teaCacheEnd?: number
+  teaCacheMaxSkipSteps?: number
+  teaCacheStart?: number
+  teaCacheThreshold?: number
+  cfgZeroInitSteps?: number
+  cfgZeroStar?: boolean
+  separateT5?: boolean
+  t5Text?: string
+  causalInferenceEnabled?: boolean
+  causalInference?: number
+  causalInferencePad?: number
 }
 
 export type LoraConfig = {

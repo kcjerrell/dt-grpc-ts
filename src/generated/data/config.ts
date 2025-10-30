@@ -7,5 +7,6 @@ export { ControlInputType } from './control-input-type.js';
 export { ControlMode } from './control-mode.js';
 export { GenerationConfiguration, GenerationConfigurationT } from './generation-configuration.js';
 export { LoRA, LoRAT } from './lo-ra.js';
+export { LoRAMode } from './lo-ramode.js';
 export { SamplerType } from './sampler-type.js';
 export { SeedMode } from './seed-mode.js';

@@ -13,7 +13,7 @@ async function updateConfig() {
   await fse.ensureDir('fbs')
   await fse.writeFile('fbs/config.fbs', fbs)
 
-  cp.execSync('flatc --ts --gen-object-api -o src/generated/data fbs/config.fbs')
+  cp.execSync('flatc --ts --gen-object-api -o src/generated/data fbs/config.fbs', { stdio: 'inherit',  })
 }
 
 async function updateClient() {
@@ -28,7 +28,11 @@ async function updateClient() {
   cp.execSync('protoc --ts_out=src/generated/grpc proto/imageService.proto')
 }
 
-// if (import.meta.url === process.argv[1]) {
-  updateConfig().then(() => process.exit(0)).catch(console.error)
-  updateClient().then(() => process.exit(0)).catch(console.error) 
-// }
+async function update() {
+  await updateConfig()
+  // await updateClient()
+}
+
+update().then(() => {
+  console.log('Done')
+})
