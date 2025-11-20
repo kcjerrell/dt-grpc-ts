@@ -1,9 +1,16 @@
 import sharp, { Sharp } from 'sharp'
 import { convertImageForRequest, convertResponseImage } from './imageHelpers'
 
+function getSharp() {
+  if (typeof sharp !== 'function') {
+    throw new Error('Sharp is not available in this environment')
+  }
+  return sharp
+}
+
 export class ImageBuffer implements BufferWithInfo {
   static async fromFile(filename: string) {
-    const buffer = await sharp(filename).raw().toBuffer({ resolveWithObject: true })
+    const buffer = await getSharp()(filename).raw().toBuffer({ resolveWithObject: true })
     return new ImageBuffer(buffer)
   }
 
@@ -199,7 +206,7 @@ export class ImageBuffer implements BufferWithInfo {
    * @returns A `Sharp` object or a `Promise<ImageBuffer>`.
    */
   sharp(...args: [(sharp: Sharp) => Sharp] | []): Promise<ImageBuffer> | Sharp {
-    const s = sharp(this.data, {
+    const s = getSharp()(this.data, {
       raw: { width: this.width, height: this.height, channels: this.channels },
     })
 
@@ -220,7 +227,7 @@ export class ImageBuffer implements BufferWithInfo {
   }
 
   clone() {
-    return new ImageBuffer(Buffer.from(this.data), this.width, this.height, this.channels)
+    return new ImageBuffer(new Uint8Array(this.data), this.width, this.height, this.channels)
   }
 
   /**
@@ -300,7 +307,7 @@ export class ImageBuffer implements BufferWithInfo {
     const dataStart = data.startsWith('data:image/png;base64,')
       ? 'data:image/png;base64,'.length
       : 0
-    const raw = await sharp(Buffer.from(data.slice(dataStart), 'base64'))
+    const raw = await getSharp()(Buffer.from(data.slice(dataStart), 'base64'))
 
     return ImageBuffer.fromPipeline(raw)
   }
