@@ -24,35 +24,12 @@ export async function convertResponseImage(responseImage: Uint8Array): Promise<B
     f16rgb = new Float16Array(responseImage.buffer, offset, length / 2)
   }
 
-
   console.debug(`${width}x${height} image with ${channels} channels`)
   console.debug(`Input size: ${responseImage.byteLength} (Expected: ${length + 68})`)
 
   let u8c: Uint8ClampedArray
 
-  // if (channels === 3)
   u8c = Uint8ClampedArray.from(f16rgb, float16ToUint8)
-
-  // if (channels === 4) {
-  //   u8c = new Uint8ClampedArray(width * height * 4)
-  //   for (let i = 0; i < f16rgb.length; i += 1) {
-  //     const [v0, v1, v2, v3] = [
-  //       f16rgb[i * 4],
-  //       f16rgb[i * 4 + 1],
-  //       f16rgb[i * 4 + 2],
-  //       f16rgb[i * 4 + 3],
-  //     ]
-
-  //     const r = 10.175 * v0 - 20.807 * v1 - 27.834 * v2 - 2.0577 * v3 + 143.39
-  //     const g = 21.07 * v0 - 4.3022 * v1 - 11.258 * v2 - 18.8 * v3 + 131.53
-  //     const b = 7.8454 * v0 - 2.3713 * v1 - 0.45565 * v2 - 41.648 * v3 + 120.76
-
-  //     u8c[i * 4] = r //float16ToUint8(r)
-  //     u8c[i * 4 + 1] = g //float16ToUint8(g)
-  //     u8c[i * 4 + 2] = b //float16ToUint8(b)
-  //     u8c[i * 4 + 3] = 255
-  //   }
-  // }
 
   return {
     data: u8c!,

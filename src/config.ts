@@ -10,6 +10,7 @@ import { ControlT } from './generated/data/control'
 import { ControlMode } from './generated/data/control-mode'
 import { ControlInputType } from './generated/data/control-input-type'
 import { getSampler, getSeedMode } from './typeConverters'
+import { LoRAMode } from './generated/data/lo-ramode'
 
 // default configuration from DT app
 // some properties renamed
@@ -56,6 +57,11 @@ const drawThingsDefault: Config = {
   teaCacheThreshold: 0.2,
   cfgZeroInitSteps: 0,
   cfgZeroStar: false,
+  resolutionDependentShift: true,
+  causalInferenceEnabled: false,
+  causalInference: 3,
+  causalInferencePad: 0,
+  separateT5: false,
 }
 
 export function buildConfig(config: Config = {}) {
@@ -134,7 +140,7 @@ export function buildConfig(config: Config = {}) {
     c.openClipGText, // openClipGText
     c.speedUpWithGuidanceEmbed, // speedUpWithGuidanceEmbed
     c.guidanceEmbed, // guidanceEmbed
-    true,
+    c.resolutionDependentShift,
     c.teaCacheStart, // teaCacheStart
     c.teaCacheEnd, // teaCacheEnd
     c.teaCacheThreshold, // teaCacheThreshold
@@ -169,6 +175,7 @@ export function unpackConfig(configBuffer: Uint8Array) {
 
 const loraDefault: Omit<LoraConfig, 'file'> = {
   weight: 0.8,
+  mode: LoRAMode.All,
 }
 
 function getLoraTs(loras?: LoraConfig[]) {
@@ -181,7 +188,7 @@ function getLoraTs(loras?: LoraConfig[]) {
     const lora = { ...loraDefault, ...loraInput }
 
     if (!lora.file) continue
-    loraTs.push(new LoRAT(lora.file, lora.weight))
+    loraTs.push(new LoRAT(lora.file, lora.weight, lora.mode))
   }
 
   return loraTs

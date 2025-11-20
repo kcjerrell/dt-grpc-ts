@@ -3,6 +3,8 @@ import { ControlMode } from './generated/data/control-mode'
 import { SamplerType } from './generated/data/sampler-type'
 import { SeedMode } from './generated/data/seed-mode'
 
+import { LoRAMode } from './generated/data/lo-ramode'
+
 export interface Config {
   width?: number
   height?: number
@@ -76,7 +78,7 @@ export interface Config {
   speedUpWithGuidanceEmbed?: boolean
   guidanceEmbed?: number
   resolutionDependentShift?: boolean
-  teaCache?: false
+  teaCache?: boolean
   teaCacheEnd?: number
   teaCacheMaxSkipSteps?: number
   teaCacheStart?: number
@@ -93,6 +95,7 @@ export interface Config {
 export type LoraConfig = {
   file: string
   weight: number
+  mode?: LoRAMode
 }
 
 export type ExtendedLoraConfig = LoraConfig | [string, number?] | string
