@@ -4,8 +4,11 @@ import { BufferWithInfo } from './imageBuffer'
 import { decompress } from './fpzip/decompress'
 
 /**
- * @param responseImage the image data, from ImageGenerationReponse.generatedImages
- * @returns an object with the image data, size, and channel count
+ * Converts a raw response image buffer (from gRPC) into a usable `BufferWithInfo` object.
+ * Handles decompression if the image is compressed.
+ *
+ * @param responseImage - The raw image data from `ImageGenerationResponse.generatedImages`.
+ * @returns A promise that resolves to an object containing the image data, width, height, and channel count.
  */
 export async function convertResponseImage(responseImage: Uint8Array): Promise<BufferWithInfo> {
   const intBuffer = new Uint32Array(responseImage.buffer, 0, 17)
@@ -40,9 +43,11 @@ export async function convertResponseImage(responseImage: Uint8Array): Promise<B
 }
 
 /**
+ * Saves a raw response image buffer to a file.
  *
- * @param responseImage the image data, from ImageGenerationReponse.generatedImages
- * @param path file path to save the image
+ * @param responseImage - The raw image data from `ImageGenerationResponse.generatedImages`.
+ * @param path - The file path to save the image to.
+ * @returns A promise that resolves when the file is written.
  */
 export async function saveResponseImage(responseImage: Uint8Array, path: string) {
   const { data, width, height, channels } = await convertResponseImage(responseImage)
@@ -52,7 +57,13 @@ export async function saveResponseImage(responseImage: Uint8Array, path: string)
   }).toFile(path)
 }
 
-//TODO - come back to this
+/**
+ * Converts a `BufferWithInfo` object into the format required for an image generation request.
+ * This involves converting pixel values to Float16 and adding a specific header.
+ *
+ * @param image - The source image.
+ * @returns A Uint8Array containing the formatted image data.
+ */
 export function convertImageForRequest(image: BufferWithInfo) {
   // const f16rgb = new Uint8Array(68 + image.width! * image.height! * 3 * 2)
   const f16rgb = new Uint8Array(68 + image.width! * image.height! * image.channels! * 2)
@@ -89,6 +100,14 @@ function float16ToUint8(f16: number) {
   return (f16 + 1) * 127
 }
 
+/**
+ * Converts an image into a mask format for inpainting.
+ *
+ * @param image - The source image (should be grayscale or have an alpha channel).
+ * @param threshold - The threshold value to determine mask regions (default: 127).
+ * @returns A Uint8Array containing the mask data.
+ * @throws Error if the image is invalid.
+ */
 export function convertImageToMask(image: BufferWithInfo, threshold = 127): Uint8Array {
   if (
     !image ||

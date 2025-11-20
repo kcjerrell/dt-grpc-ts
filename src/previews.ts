@@ -23,9 +23,14 @@ decoders['v1'] =
     }
 
 /**
- *  for decoding preview images. These should be in the format returned by the gRPC api
- *  width * height * 4 array of float16 values
- *  decodes the image into a width * height * 3 array of bytes (uint8)
+ * Decodes a preview image returned by the gRPC API.
+ * The API returns a width * height * 4 array of float16 values.
+ * This function decodes it into a width * height * 3 array of bytes (uint8).
+ * Currenlty on SD1 is supported
+ *
+ * @param preview - The raw preview data as a Uint8Array (representing float16s).
+ * @param version - The decoder version to use (e.g., 'v1', 'v2', 'svdI2v').
+ * @returns A promise that resolves to a `BufferWithInfo` object containing the decoded image.
  */
 export async function decodePreview(
   preview: Uint8Array,

@@ -140,19 +140,42 @@ export function buildRequest(
 
 export type RequestBuilder<Image extends boolean = true, Mask extends boolean = true> = {
   /**
-   * Adds a control hint image to the request, for use with controlnets
-   * Images will be resized to match the config if necessary
-   * Images with the depth hint type will be converted to grayscale
+   * Adds a control hint image to the request, for use with controlnets.
+   * Images will be resized to match the config if necessary.
+   * Images with the depth hint type will be converted to grayscale.
    *
-   * @param hintType - The type of hint to be added.
+   * @param hintType - The type of hint to be added (e.g., 'depth', 'canny').
    * @param image - The image to be added as a hint.
-   * @param weight - The weight of the hint.
+   * @param weight - The weight of the hint (0.0 to 1.0+).
+   * @returns The builder instance for chaining.
    */
   addHint(hintType: HintType, image: BufferWithInfo, weight: number): RequestBuilder<Image, Mask>
+
+  /**
+   * Adds multiple control hint images to the request.
+   *
+   * @param hints - An array of hint objects containing hintType, image, and weight.
+   * @returns The builder instance for chaining.
+   */
   addHints(
     hints: { hintType: HintType; image: BufferWithInfo; weight: number }[]
   ): RequestBuilder<Image, Mask>
+
+  /**
+   * Adds an override for a specific model or setting.
+   *
+   * @param type - The type of override (e.g., 'models', 'loras').
+   * @param value - The override value or array of values.
+   * @returns The builder instance for chaining.
+   */
   addOverride<T extends keyof Override>(type: T, value: Override[T]): RequestBuilder<Image, Mask>
+
+  /**
+   * Adds multiple overrides to the request.
+   *
+   * @param overrides - An object containing multiple overrides.
+   * @returns The builder instance for chaining.
+   */
   addOverrides(overrides: Partial<Override>): RequestBuilder<Image, Mask>
 
   /**

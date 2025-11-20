@@ -1,6 +1,11 @@
 import { Hints } from './types';
 import { sha256 } from './util';
 
+/**
+ * Creates a builder for constructing hint objects used in ControlNet.
+ *
+ * @returns An object with methods to add hint images and build the final hint structure.
+ */
 export function buildHints() {
   const items = [] as {
     hintType: HintType;
@@ -9,10 +14,22 @@ export function buildHints() {
   }[];
 
   return {
+    /**
+     * Adds a hint image.
+     *
+     * @param hintType - The type of hint.
+     * @param image - The image data as a Uint8Array.
+     * @param weight - The weight of the hint.
+     */
     addHintImage(hintType: HintType, image: Uint8Array, weight: number) {
       items.push({ hintType, image, weight });
       return this as ReturnType<typeof buildHints>
     },
+    /**
+     * Builds the hints object for the request.
+     *
+     * @returns A `Hints` object.
+     */
     buildHintsObject() {
       const types = [...new Set(items.map(item => item.hintType))];
       const hints = types.map(hintType => {
@@ -28,6 +45,11 @@ export function buildHints() {
 
       return hints as Hints;
     },
+    /**
+     * Builds hints and separates the image contents for transmission.
+     *
+     * @returns An object containing the `hints` structure and a flat array of `contents` (images).
+     */
     buildsHintsWithContents() {
       const types = [...new Set(items.map(item => item.hintType))];
       const contents = [] as Uint8Array[];

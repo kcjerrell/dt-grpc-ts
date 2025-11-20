@@ -100,6 +100,12 @@ export class DTService {
     }
   }
 
+  /**
+   * Echoes the request back from the server, useful for checking connectivity and retrieving server configuration.
+   *
+   * @param name - An optional name to send in the echo request.
+   * @returns A promise that resolves to the echo reply, including the server's model overrides.
+   */
   async echo(name?: string) {
     await this.waitForReady()
 
@@ -120,6 +126,14 @@ export class DTService {
     })
   }
 
+  /**
+   * Checks if specific files exist on the server.
+   *
+   * @param files - A list of file paths to check.
+   * @param filesWithHash - A list of file paths to check with their expected hashes.
+   * @param sharedSecret - An optional shared secret for authentication.
+   * @returns A promise that resolves to the file list response.
+   */
   async filesExist(files: string[], filesWithHash: string[], sharedSecret?: string) {
     const request = FileListRequest.fromObject({ files, filesWithHash, sharedSecret })
     return new Promise((resolve, reject) => {
@@ -131,6 +145,18 @@ export class DTService {
     })
   }
 
+  /**
+   * Generates an image based on the provided request and options.
+   *
+   * @param request - The image generation request, either as a `RequestBuilder` or a raw `ImageRequest` object.
+   * @param options - Optional settings for the generation process.
+   * @param options.onUpdate - A callback function that receives updates during generation, including intermediate previews.
+   * @param options.outputFormat - The desired output format for the generated images ('tensor' or 'imagebuffer'). Defaults to 'imagebuffer'.
+   * @param options.abortSignal - An AbortSignal to cancel the request.
+   * @param options.debug - If true, enables debug logging.
+   * @param options.progress - If true, shows a progress bar in the console.
+   * @returns A promise that resolves to an array of generated images (as Uint8Array[] or ImageBuffer[]).
+   */
   async generateImage<T extends 'tensor' | 'imagebuffer' = 'imagebuffer'>(
     request: ImageRequest | RequestBuilder,
     options: GenerateImageOptions<T> = {}

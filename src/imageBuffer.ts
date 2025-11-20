@@ -14,10 +14,15 @@ export class ImageBuffer implements BufferWithInfo {
     return new ImageBuffer(buffer)
   }
 
+  /** The raw pixel data of the image. */
   readonly data: Uint8Array
+  /** The width of the image in pixels. */
   readonly width: number
+  /** The height of the image in pixels. */
   readonly height: number
+  /** The number of channels in the image (1-4). */
   readonly channels: 1 | 2 | 3 | 4
+  /** The number of color channels (excluding alpha). */
   readonly colorChannels: 1 | 2 | 3
 
   /**
@@ -153,6 +158,11 @@ export class ImageBuffer implements BufferWithInfo {
     return this.data.slice(addr, addr + this.channels)
   }
 
+  /**
+   * Calculates the minimum pixel value and minimum grayscale value in the image.
+   *
+   * @returns An object containing `minValue` (minimum individual channel value) and `minGray` (minimum average of RGB).
+   */
   minimum() {
     let minValue = 255
     let minGray = 255
@@ -168,6 +178,11 @@ export class ImageBuffer implements BufferWithInfo {
     return { minValue, minGray: minGray / 3 }
   }
 
+  /**
+   * Calculates the maximum pixel value and maximum grayscale value in the image.
+   *
+   * @returns An object containing `maxValue` (maximum individual channel value) and `maxGray` (maximum average of RGB).
+   */
   maximum() {
     let maxValue = 0
     let maxGray = 0
@@ -183,6 +198,11 @@ export class ImageBuffer implements BufferWithInfo {
     return { maxValue, maxGray: maxGray / 3 }
   }
 
+  /**
+   * Applies a mapping function to every pixel in the image.
+   *
+   * @param mapFn - A function that takes the current pixel value, x, and y coordinates, and returns a new pixel value.
+   */
   map(mapFn: mapFn) {
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
@@ -214,6 +234,14 @@ export class ImageBuffer implements BufferWithInfo {
     return s
   }
 
+  /**
+   * Composites another image onto this one.
+   *
+   * @param image - The image to composite over this one.
+   * @param mix - The opacity of the overlay image (0.0 to 1.0).
+   * @param blendMode - The blending mode to use (e.g., 'over', 'multiply', 'screen').
+   * @returns A promise that resolves to a new `ImageBuffer` with the composition applied.
+   */
   async composite(image: ImageBuffer, mix = 0.5, blendMode: sharp.Blend = 'over'): Promise<ImageBuffer> {
     const inputImage = await image.sharp().removeAlpha().ensureAlpha(mix).png().toBuffer()
     return await this.sharp(s =>
@@ -226,6 +254,11 @@ export class ImageBuffer implements BufferWithInfo {
     )
   }
 
+  /**
+   * Creates a deep copy of this ImageBuffer.
+   *
+   * @returns A new `ImageBuffer` instance with copied data.
+   */
   clone() {
     return new ImageBuffer(new Uint8Array(this.data), this.width, this.height, this.channels)
   }

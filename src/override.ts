@@ -2,25 +2,13 @@ import { EchoReply } from './generated/grpc/imageService'
 
 const emptyArray = encode([])
 
-export function getOverride() {
-  return {
-    models: encode([
-      {
-        default_scale: 8,
-        file: 'sd_v1.5_f16.ckpt',
-        name: 'Generic (Stable Diffusion v1.5)',
-        prefix: '',
-        upcast_attention: false,
-        version: 'v1',
-      },
-    ]),
-    loras: emptyArray,
-    upscalers: emptyArray,
-    controlNets: emptyArray,
-    textualInversions: emptyArray,
-  }
-}
 
+/**
+ * Decodes the override object received from the server (which contains JSON strings as bytes).
+ *
+ * @param override - The raw override object from the gRPC response.
+ * @returns A structured `Override` object with parsed JSON data.
+ */
 export function decodeOverride(override?: ReturnType<EchoReply['toObject']>['override']) {
   const decode = (buffer?: Uint8Array) => {
     if (!buffer || buffer.length === 0) return []
@@ -40,6 +28,12 @@ export function decodeOverride(override?: ReturnType<EchoReply['toObject']>['ove
   return decoded as Override
 }
 
+/**
+ * Encodes a structured `Override` object into the format required by the gRPC request (JSON strings as bytes).
+ *
+ * @param override - The partial override object to encode.
+ * @returns An object with byte arrays suitable for the gRPC request.
+ */
 export function encodeOverride(override: Partial<Override>) {
   const encoded = {
     controlNets: encode(override?.controlNets),

@@ -64,6 +64,13 @@ const drawThingsDefault: Config = {
   separateT5: false,
 }
 
+/**
+ * Builds a GenerationConfigurationT object from a partial Config object.
+ * Applies default values and converts units where necessary (e.g., pixels to blocks).
+ *
+ * @param config - The partial configuration object.
+ * @returns A GenerationConfigurationT object ready for FlatBuffers packing.
+ */
 export function buildConfig(config: Config = {}) {
   const c: Config = { ...drawThingsDefault, ...config }
 
@@ -158,6 +165,12 @@ export function buildConfig(config: Config = {}) {
   return genConfig
 }
 
+/**
+ * Serializes a GenerationConfigurationT object into a FlatBuffers Uint8Array.
+ *
+ * @param configT - The configuration object to serialize.
+ * @returns A Uint8Array containing the FlatBuffers encoded data.
+ */
 export function buildConfigBuffer(configT: GenerationConfigurationT) {
   // const configT = buildConfig(config)
 
@@ -167,6 +180,12 @@ export function buildConfigBuffer(configT: GenerationConfigurationT) {
   return builder.asUint8Array()
 }
 
+/**
+ * Deserializes a FlatBuffers encoded configuration buffer into a GenerationConfiguration object.
+ *
+ * @param configBuffer - The FlatBuffers encoded data.
+ * @returns A GenerationConfiguration object.
+ */
 export function unpackConfig(configBuffer: Uint8Array) {
   const buf = new ByteBuffer(configBuffer)
   let conf = GenerationConfiguration.getRootAsGenerationConfiguration(buf)
@@ -235,6 +254,11 @@ function getControlsTs(controls?: ControlConfig[]) {
   return controlTs
 }
 
+/**
+ * Retrieves the default configuration with any necessary initializations.
+ *
+ * @returns A Config object with default values.
+ */
 export function getBaseConfig() {
   const config = { ...buildConfig(), ...drawThingsDefault }
 
