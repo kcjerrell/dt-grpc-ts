@@ -1,4 +1,5 @@
 # dt-grpc-ts
+A simple gRPC client for Draw Things written in TypeScript for Node.js
 
 A TypeScript/Node.js client library for the [Draw Things](https://drawthings.ai/) gRPC API.
 
