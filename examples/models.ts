@@ -1,7 +1,9 @@
 import { DTService } from '../dist'
 
+const address = process.argv[2] || 'localhost:7859'
+
 async function modelsExample() {
-  const client = new DTService('localhost:7859')
+    const client = new DTService(address)
 
   const response = await client.echo()
 
