@@ -3,6 +3,7 @@ import { DTService } from '../dist'
 const address = process.argv[2] || 'localhost:7859'
 
 async function modelsExample() {
+    console.log("Connecting to Draw Things gRPC server at", address)
     const client = new DTService(address)
 
   const response = await client.echo()

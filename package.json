@@ -30,12 +30,14 @@
     "test": "vitest run",
     "test:watch": "vitest --watch --ui",
     "gen-code": "node scripts/genCode.mjs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "example": "tsx examples/index.ts"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.2",
     "@petamoriken/float16": "^3.9.2",
     "cli-progress": "^3.12.0",
+    "crypto-browserify": "^3.12.1",
     "flatbuffers": "^25.2.10",
     "google-protobuf": "^3.21.4",
     "sharp": "^0.34.4"
